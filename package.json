@@ -1,0 +1,42 @@
+{
+  "name": "creativesketchtemplate",
+  "version": "1.0.0",
+  "description": "A (hopefully) quicker way to stand up a Javascript creative coding environment",
+  "main": "index.js",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "clean": "rm -rf node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kylestew/CreativeSketchTemplate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@thi.ng/api": "^8.3.2",
+    "@thi.ng/arrays": "^2.1.2",
+    "@thi.ng/binary": "^3.1.2",
+    "@thi.ng/checks": "^3.1.2",
+    "@thi.ng/color": "^4.1.4",
+    "@thi.ng/distance": "^2.1.4",
+    "@thi.ng/errors": "^2.1.2",
+    "@thi.ng/geom": "^3.1.4",
+    "@thi.ng/geom-api": "^3.1.4",
+    "@thi.ng/math": "^5.1.2",
+    "@thi.ng/matrices": "^2.1.4",
+    "@thi.ng/random": "^3.2.2",
+    "@thi.ng/strings": "^3.2.2",
+    "@thi.ng/transducers": "^8.1.2",
+    "@thi.ng/vectors": "^7.4.0",
+    "dat.gui": "^0.7.7",
+    "redux": "^4.1.2",
+    "simplex-noise": "^3.0.0",
+    "stats.js": "^0.17.0"
+  },
+  "devDependencies": {
+    "vite": "^2.7.0"
+  }
+}
