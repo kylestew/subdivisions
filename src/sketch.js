@@ -1,9 +1,49 @@
 import { ImageSampler } from "../snod/sampler";
 import { transformThatFits, insetRect } from "../snod/util";
 import grids from "../snod/grids";
+import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
+import { rgbToHex } from "../snod/util";
+import { centroid } from "@thi.ng/geom";
+import {
+  earCut2,
+  rimTris,
+  quadFan,
+  triFan,
+  edgeSplit,
+} from "@thi.ng/geom-tessellate";
 
 let sampler = new ImageSampler("./assets/tex03.jpg");
+
+function colorDepthDivider(poly, depth, sampler) {
+  let color = sampler.colorAt(centroid(poly));
+  let lumi = luminosity(color);
+  // console.log(color, lumi);
+
+  return depth < lumi * 3;
+  return false;
+}
+
+function sampledPolyTint(poly, sampler) {
+  let color = sampler.colorAt(centroid(poly));
+  poly.attribs = {
+    fill: rgbToHex(color),
+  };
+  return poly;
+}
+
+function createTessedGeometry(width, height, state) {
+  // setup base grid geometry
+  let baseGeo = grids.diamond(width, height, parseInt(state.gridDensity));
+
+  // tessellate
+  let decisionFn = (poly, depth) => colorDepthDivider(poly, depth, sampler);
+  let tessedPolys = subdiv(baseGeo, [triFan, edgeSplit], decisionFn);
+
+  // color polys
+  const polyTintFn = (poly) => sampledPolyTint(poly, sampler);
+  return tessedPolys.map(polyTintFn);
+}
 
 function render({ ctx, time, width, height, state }) {
   // transform canvas to fit image
@@ -16,12 +56,8 @@ function render({ ctx, time, width, height, state }) {
   width = sampler.width;
   height = sampler.height;
 
-  // setup base grid geometry
-  let baseGeo = grids.diamond(width, height, parseInt(state.gridDensity));
-
-  // tessellate -> tint pipeline
-  let tessedPolys = subdiv(baseGeo, sampler, {});
-  // console.log(tessedPolys);
+  // do the actual tesselation
+  const polys = createTessedGeometry(width, height, state);
 
   const renderPoly = (poly) => {
     // console.log(poly);
@@ -54,7 +90,7 @@ function render({ ctx, time, width, height, state }) {
   ctx.clip();
 
   // draw grid
-  tessedPolys.map(renderPoly);
+  polys.map(renderPoly);
 
   // if stroke enabled, border canvas to clean up edges
   if (state.enableStroke) {

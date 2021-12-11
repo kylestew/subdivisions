@@ -2,7 +2,7 @@ import { createStore } from "redux";
 
 const initState = {
   gridDensity: 4,
-  enableStroke: true,
+  enableStroke: false,
   lineWidth: 9.0,
   lineColor: "#fff",
 };

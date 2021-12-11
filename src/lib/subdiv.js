@@ -1,46 +1,23 @@
 import { polygon, tessellate, centroid, arcLength } from "@thi.ng/geom";
-import {
-  earCut2,
-  rimTris,
-  quadFan,
-  triFan,
-  edgeSplit,
-} from "@thi.ng/geom-tessellate";
-import { rgbToHex } from "../../snod/util";
 
 const makePoly = (points) => polygon(points);
 
-function recursiveTess(poly, depth, decisionFn) {
-  let polys = tessellate(poly, [triFan]).map(makePoly);
-  return polys.flatMap((poly) => {
-    if (decisionFn(poly, depth + 1)) {
-      return recursiveTess(poly, depth + 1, decisionFn);
-    }
-    return poly;
-  });
-}
-
-function decision(poly, depth) {
-  // console.log(poly);
-  return depth < 1;
-}
-
-function sampledPolyTint(poly, sampler) {
-  let color = sampler.colorAt(centroid(poly));
-  // console.log(centroid(poly), color);
-  poly.attribs = {
-    fill: rgbToHex(color),
-  };
+function recursiveTess(poly, depth, tessFns, decisionFn) {
+  if (decisionFn(poly, depth)) {
+    // tess fn selected based on depth
+    let idx = depth % tessFns.length;
+    let polys = tessellate(poly, [tessFns[idx]]).map(makePoly);
+    return polys.flatMap((poly) =>
+      recursiveTess(poly, depth + 1, tessFns, decisionFn)
+    );
+  }
   return poly;
 }
 
-function subdiv(polys, sampler, decisionFn) {
-  decisionFn = decision;
+function subdiv(polys, tessFns, decisionFn) {
   // for each polygon, recursively tesselate based on some sort of decision function
-  const tessFn = (poly) => recursiveTess(poly, 0, decisionFn);
-  // sample image at centroid for poly color
-  const polyTintFn = (poly) => sampledPolyTint(poly, sampler);
-  return polys.flatMap(tessFn).map(polyTintFn);
+  const tessFn = (poly) => recursiveTess(poly, 0, tessFns, decisionFn);
+  return polys.flatMap(tessFn);
 }
 
 export { subdiv };

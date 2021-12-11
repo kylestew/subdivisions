@@ -13,7 +13,7 @@ function createGUI(app) {
   };
 
   var baseGridFolder = gui.addFolder("Base Grid");
-  baseGridFolder.open();
+  // baseGridFolder.open();
 
   baseGridFolder
     .add(state, "gridDensity")
@@ -24,7 +24,7 @@ function createGUI(app) {
     .onChange((val) => dispatchUpdate({ gridDensity: val }));
 
   let styleFolder = gui.addFolder("Style");
-  styleFolder.open();
+  // styleFolder.open();
 
   styleFolder
     .add(state, "enableStroke")
