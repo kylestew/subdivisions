@@ -23,8 +23,24 @@ function createGUI(app) {
     .step(1)
     .onChange((val) => dispatchUpdate({ gridDensity: val }));
 
+  var tessFolder = gui.addFolder("Tessellation");
+  tessFolder.open();
+
+  tessFolder
+    .add(state, "maxDepth")
+    .name("Max Depth")
+    .min(1)
+    .max(5)
+    .step(1)
+    .onChange((val) => dispatchUpdate({ maxDepth: val }));
+
   let styleFolder = gui.addFolder("Style");
-  // styleFolder.open();
+  styleFolder.open();
+
+  styleFolder
+    .add(state, "enableFill")
+    .name("Fill Polygons")
+    .onChange((val) => dispatchUpdate({ enableStroke: val }));
 
   styleFolder
     .add(state, "enableStroke")
@@ -42,6 +58,14 @@ function createGUI(app) {
   styleFolder
     .addColor(state, "lineColor")
     .onChange((val) => dispatchUpdate({ lineColor: val }));
+
+  styleFolder
+    .add(state, "lineOpacity")
+    .name("Line Opacity")
+    .min(0)
+    .max(255)
+    .step(1)
+    .onChange((val) => dispatchUpdate({ lineOpacity: val }));
 }
 
 export { createGUI };

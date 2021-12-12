@@ -14,9 +14,14 @@ function recursiveTess(poly, depth, tessFns, decisionFn) {
   return poly;
 }
 
-function subdiv(polys, tessFns, decisionFn) {
+function subdiv(polys, tessFns, decisionFn, maxDepth) {
   // for each polygon, recursively tesselate based on some sort of decision function
-  const tessFn = (poly) => recursiveTess(poly, 0, tessFns, decisionFn);
+  // decisions function returns [0-1] which maps to 0 to max recursion
+  let scaledMaxedDecisionFn = (poly, depth) => {
+    return depth < decisionFn(poly) * maxDepth;
+  };
+  const tessFn = (poly) =>
+    recursiveTess(poly, 0, tessFns, scaledMaxedDecisionFn);
   return polys.flatMap(tessFn);
 }
 

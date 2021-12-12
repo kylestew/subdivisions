@@ -1,10 +1,15 @@
 import { createStore } from "redux";
 
 const initState = {
-  gridDensity: 4,
-  enableStroke: false,
-  lineWidth: 9.0,
-  lineColor: "#fff",
+  gridDensity: 12,
+
+  maxDepth: 3,
+
+  enableFill: false,
+  enableStroke: true,
+  lineWidth: 2.0,
+  lineColor: "#FFFFFF",
+  lineOpacity: 255,
 };
 
 const AppActions = {

@@ -1,5 +1,5 @@
 import { ImageSampler } from "../snod/sampler";
-import { transformThatFits, insetRect } from "../snod/util";
+import { transformThatFits, insetRect, componentToHex } from "../snod/util";
 import grids from "../snod/grids";
 import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
@@ -15,13 +15,11 @@ import {
 
 let sampler = new ImageSampler("./assets/tex03.jpg");
 
-function colorDepthDivider(poly, depth, sampler) {
+function colorDepthDivider(poly, sampler) {
   let color = sampler.colorAt(centroid(poly));
   let lumi = luminosity(color);
-  // console.log(color, lumi);
-
-  return depth < lumi * 3;
-  return false;
+  // shape luminosity so its more responsive on the low end: [0-1] -> [0-1]
+  return Math.log10(lumi * 9 + 1);
 }
 
 function sampledPolyTint(poly, sampler) {
@@ -37,8 +35,13 @@ function createTessedGeometry(width, height, state) {
   let baseGeo = grids.diamond(width, height, parseInt(state.gridDensity));
 
   // tessellate
-  let decisionFn = (poly, depth) => colorDepthDivider(poly, depth, sampler);
-  let tessedPolys = subdiv(baseGeo, [triFan, edgeSplit], decisionFn);
+  let decisionFn = (poly) => colorDepthDivider(poly, sampler);
+  let tessedPolys = subdiv(
+    baseGeo,
+    [edgeSplit, triFan],
+    decisionFn,
+    state.maxDepth
+  );
 
   // color polys
   const polyTintFn = (poly) => sampledPolyTint(poly, sampler);
@@ -69,14 +72,16 @@ function render({ ctx, time, width, height, state }) {
     });
     ctx.lineTo(p0[0], p0[1]);
 
-    ctx.fillStyle = poly.attribs.fill;
-    ctx.fill();
+    if (state.enableFill) {
+      ctx.fillStyle = poly.attribs.fill;
+      ctx.fill();
+    }
 
     if (state.enableStroke) {
-      ctx.strokeStyle = state.lineColor;
+      ctx.strokeStyle = state.lineColor + componentToHex(state.lineOpacity);
       ctx.lineWidth = state.lineWidth;
       ctx.stroke();
-    } else {
+    } else if (state.enableFill) {
       // stroke to fill in gaps in polys
       ctx.strokeStyle = ctx.fillStyle;
       ctx.lineWidth = 2.5;
