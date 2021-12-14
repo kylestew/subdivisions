@@ -1,4 +1,3 @@
-import { ImageSampler } from "../snod/sampler";
 import { transformThatFits, insetRect, componentToHex } from "../snod/util";
 import grids from "../snod/grids";
 import { luminosity } from "../snod/color";
@@ -12,8 +11,6 @@ import {
   triFan,
   edgeSplit,
 } from "@thi.ng/geom-tessellate";
-
-let sampler = new ImageSampler("./assets/tex03.jpg");
 
 function colorDepthDivider(poly, sampler) {
   let color = sampler.colorAt(centroid(poly));
@@ -35,7 +32,7 @@ function createTessedGeometry(width, height, state) {
   let baseGeo = grids.diamond(width, height, parseInt(state.gridDensity));
 
   // tessellate
-  let decisionFn = (poly) => colorDepthDivider(poly, sampler);
+  let decisionFn = (poly) => colorDepthDivider(poly, state.sampler);
   let tessedPolys = subdiv(
     baseGeo,
     [edgeSplit, triFan],
@@ -44,11 +41,15 @@ function createTessedGeometry(width, height, state) {
   );
 
   // color polys
-  const polyTintFn = (poly) => sampledPolyTint(poly, sampler);
+  const polyTintFn = (poly) => sampledPolyTint(poly, state.sampler);
   return tessedPolys.map(polyTintFn);
 }
 
 function render({ ctx, time, width, height, state }) {
+  const { sampler, enableFill, enableStroke } = state;
+
+  if (sampler == undefined) return;
+
   // transform canvas to fit image
   let trans = transformThatFits(
     [sampler.width, sampler.height],
@@ -72,16 +73,16 @@ function render({ ctx, time, width, height, state }) {
     });
     ctx.lineTo(p0[0], p0[1]);
 
-    if (state.enableFill) {
+    if (enableFill) {
       ctx.fillStyle = poly.attribs.fill;
       ctx.fill();
     }
 
-    if (state.enableStroke) {
+    if (enableStroke) {
       ctx.strokeStyle = state.lineColor + componentToHex(state.lineOpacity);
       ctx.lineWidth = state.lineWidth;
       ctx.stroke();
-    } else if (state.enableFill) {
+    } else if (enableFill) {
       // stroke to fill in gaps in polys
       ctx.strokeStyle = ctx.fillStyle;
       ctx.lineWidth = 2.5;
@@ -98,7 +99,7 @@ function render({ ctx, time, width, height, state }) {
   polys.map(renderPoly);
 
   // if stroke enabled, border canvas to clean up edges
-  if (state.enableStroke) {
+  if (enableStroke) {
     ctx.strokeStyle = state.lineColor;
     ctx.lineWidth = state.lineWidth;
     ctx.beginPath();

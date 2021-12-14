@@ -1,16 +1,39 @@
 import * as dat from "dat.gui";
-import { AppActions } from "./state";
+import { AppActions, replaceSamplerFromUrl } from "./state";
+
+let imageSelector = {};
+
+function createImageSelector(app) {
+  const reader = new FileReader();
+  const input = document.getElementById("imageInput");
+
+  reader.onload = (e) => {
+    replaceSamplerFromUrl(e.target.result, app);
+  };
+
+  input.addEventListener("change", (e) => {
+    const f = e.target.files[0];
+    reader.readAsDataURL(f);
+  });
+
+  return {
+    reader,
+    input,
+  };
+}
 
 function createGUI(app) {
   const state = app.getState();
   const gui = new dat.GUI();
 
-  let dispatchUpdate = (payload) => {
+  const dispatchUpdate = (payload) => {
     app.dispatch({
       type: AppActions.UpdateParam,
       payload: payload,
     });
   };
+
+  imageSelector = createImageSelector(app);
 
   var baseGridFolder = gui.addFolder("Base Grid");
   // baseGridFolder.open();
@@ -24,7 +47,7 @@ function createGUI(app) {
     .onChange((val) => dispatchUpdate({ gridDensity: val }));
 
   var tessFolder = gui.addFolder("Tessellation");
-  tessFolder.open();
+  // tessFolder.open();
 
   tessFolder
     .add(state, "maxDepth")
@@ -35,7 +58,7 @@ function createGUI(app) {
     .onChange((val) => dispatchUpdate({ maxDepth: val }));
 
   let styleFolder = gui.addFolder("Style");
-  styleFolder.open();
+  // styleFolder.open();
 
   styleFolder
     .add(state, "enableFill")
