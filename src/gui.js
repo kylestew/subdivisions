@@ -1,5 +1,5 @@
 import * as dat from "dat.gui";
-import { AppActions, replaceSamplerFromUrl } from "./state";
+import { AppActions, replaceSamplerFromUrl, tessOptions } from "./state";
 
 let imageSelector = {};
 
@@ -32,6 +32,12 @@ function createGUI(app) {
       payload: payload,
     });
   };
+  const setTessLevel = (level, name) => {
+    app.dispatch({
+      type: AppActions.SetTessLevel,
+      payload: { level: level, name: name },
+    });
+  };
 
   imageSelector = createImageSelector(app);
 
@@ -50,12 +56,31 @@ function createGUI(app) {
   tessFolder.open();
 
   tessFolder
-    .add(state, "maxDepth")
+    .add(state, "maxDepth", 1, 5, 1)
     .name("Max Depth")
-    .min(1)
-    .max(5)
-    .step(1)
     .onChange((val) => dispatchUpdate({ maxDepth: val }));
+
+  tessFolder
+    .add(state, "invert")
+    .name("Invert")
+    .onChange((val) => dispatchUpdate({ invert: val }));
+
+  tessFolder
+    .add(state, "tessLevel1", Object.keys(tessOptions))
+    .name("Level 1")
+    .onChange((val) => setTessLevel(0, val));
+  tessFolder
+    .add(state, "tessLevel2", Object.keys(tessOptions))
+    .name("Level 2")
+    .onChange((val) => setTessLevel(1, val));
+  tessFolder
+    .add(state, "tessLevel3", Object.keys(tessOptions))
+    .name("Level 3")
+    .onChange((val) => setTessLevel(2, val));
+  tessFolder
+    .add(state, "tessLevel4", Object.keys(tessOptions))
+    .name("Level 4")
+    .onChange((val) => setTessLevel(3, val));
 
   let styleFolder = gui.addFolder("Style");
   styleFolder.open();

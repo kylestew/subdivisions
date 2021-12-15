@@ -4,18 +4,14 @@ import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
 import { rgbToHex } from "../snod/util";
 import { centroid } from "@thi.ng/geom";
-import {
-  earCut2,
-  rimTris,
-  quadFan,
-  triFan,
-  edgeSplit,
-} from "@thi.ng/geom-tessellate";
 
-function colorDepthDivider(poly, sampler) {
+function colorDepthDivider(poly, sampler, invert) {
   let color = sampler.colorAt(centroid(poly));
   let lumi = luminosity(color);
   // shape luminosity so its more responsive on the low end: [0-1] -> [0-1]
+  if (invert) {
+    return 1.0 - Math.log10(lumi * 9 + 1);
+  }
   return Math.log10(lumi * 9 + 1);
 }
 
@@ -32,10 +28,11 @@ function createTessedGeometry(width, height, state) {
   let baseGeo = grids.diamond(width, height, parseInt(state.gridDensity));
 
   // tessellate
-  let decisionFn = (poly) => colorDepthDivider(poly, state.sampler);
+  let decisionFn = (poly) =>
+    colorDepthDivider(poly, state.sampler, state.invert);
   let tessedPolys = subdiv(
     baseGeo,
-    [edgeSplit, triFan],
+    state.tessStack,
     decisionFn,
     state.maxDepth
   );
@@ -47,7 +44,6 @@ function createTessedGeometry(width, height, state) {
 
 function render({ ctx, time, width, height, state }) {
   const { sampler, enableFill, enableStroke } = state;
-
   if (sampler == undefined) return;
 
   // transform canvas to fit image
