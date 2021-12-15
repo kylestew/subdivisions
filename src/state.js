@@ -1,6 +1,16 @@
 import { createStore } from "redux";
 import { ImageSampler } from "../snod/sampler";
 
+import tex02 from "/assets/tex02.jpg";
+import tex03 from "/assets/tex03.jpg";
+import tex04 from "/assets/tex04.jpg";
+import tex05 from "/assets/tex05.jpg";
+import tex06 from "/assets/tex06.jpg";
+import tex07 from "/assets/tex07.jpg";
+import tex08 from "/assets/tex08.jpg";
+import tex09 from "/assets/tex09.jpg";
+const defaultImages = [tex02, tex03, tex04, tex05, tex06, tex07, tex08, tex09];
+
 const initState = {
   sampler: undefined,
 
@@ -40,16 +50,11 @@ function replaceSamplerFromUrl(url, store) {
   });
 }
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
-
 function createApp() {
   let store = createStore(appReducer);
 
   // select random image from set
-  const selected = getRandomInt(7) + 2; // skip first 2
-  let url = `./assets/tex0${selected}.jpg`;
+  var url = defaultImages[Math.floor(Math.random() * defaultImages.length)];
   replaceSamplerFromUrl(url, store);
 
   return store;
