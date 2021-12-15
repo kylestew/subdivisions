@@ -36,7 +36,7 @@ function createGUI(app) {
   imageSelector = createImageSelector(app);
 
   var baseGridFolder = gui.addFolder("Base Grid");
-  // baseGridFolder.open();
+  baseGridFolder.open();
 
   baseGridFolder
     .add(state, "gridDensity")
@@ -47,7 +47,7 @@ function createGUI(app) {
     .onChange((val) => dispatchUpdate({ gridDensity: val }));
 
   var tessFolder = gui.addFolder("Tessellation");
-  // tessFolder.open();
+  tessFolder.open();
 
   tessFolder
     .add(state, "maxDepth")
@@ -58,12 +58,12 @@ function createGUI(app) {
     .onChange((val) => dispatchUpdate({ maxDepth: val }));
 
   let styleFolder = gui.addFolder("Style");
-  // styleFolder.open();
+  styleFolder.open();
 
   styleFolder
     .add(state, "enableFill")
     .name("Fill Polygons")
-    .onChange((val) => dispatchUpdate({ enableStroke: val }));
+    .onChange((val) => dispatchUpdate({ enableFill: val }));
 
   styleFolder
     .add(state, "enableStroke")
