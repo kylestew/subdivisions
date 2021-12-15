@@ -40,11 +40,16 @@ function replaceSamplerFromUrl(url, store) {
   });
 }
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
 function createApp() {
   let store = createStore(appReducer);
 
-  // TODO: select from image set randomly
-  let url = "./assets/tex02.jpg";
+  // select random image from set
+  const selected = getRandomInt(7) + 2; // skip first 2
+  let url = `./assets/tex0${selected}.jpg`;
   replaceSamplerFromUrl(url, store);
 
   return store;
