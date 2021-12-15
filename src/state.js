@@ -101,8 +101,7 @@ function createApp() {
 
   // select random image from set
   var url = defaultImages[Math.floor(Math.random() * defaultImages.length)];
-  // replaceSamplerFromUrl(url, store);
-  replaceSamplerFromUrl(tex09, store);
+  replaceSamplerFromUrl(url, store);
 
   return store;
 }
