@@ -2,6 +2,8 @@ import { createStore } from "redux";
 import { ImageSampler } from "../snod/sampler";
 import { rimTris, quadFan, triFan, edgeSplit } from "@thi.ng/geom-tessellate";
 
+// import tex02 from "/assets/tex00.jpg";
+// import tex02 from "/assets/tex01.jpg";
 // import tex02 from "/assets/tex02.jpg";
 import tex03 from "/assets/tex03.jpg";
 import tex04 from "/assets/tex04.jpg";
@@ -32,10 +34,26 @@ function buildRandomTessStack() {
   return [getOne(), getOne(), getOne(), getOne()];
 }
 
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
+
+function getRandomBool() {
+  return Boolean(Math.round(Math.random()));
+}
+
+function getRandomTrue(probability) {
+  return Boolean(Math.random() < probability);
+}
+
+let willStroke = getRandomTrue(0.8);
+
 const initState = {
   sampler: undefined,
 
-  gridDensity: 9,
+  gridDensity: getRandomInt(6, 12),
 
   tessStack: buildRandomTessStack(),
 
@@ -55,14 +73,14 @@ const initState = {
     return tessOptionToName(this.tessStack[3]);
   },
   set tessLevel4(dropped) {},
-  maxDepth: 3,
-  invert: true,
+  maxDepth: getRandomInt(2, 4),
+  invert: getRandomBool(),
 
   enableFill: true,
-  enableStroke: false,
+  enableStroke: willStroke,
   lineWidth: 2.0,
-  lineColor: "#ffffff",
-  lineOpacity: 255,
+  lineColor: willStroke ? "#000000" : "#ffffff",
+  lineOpacity: willStroke ? 128 : 255,
 };
 
 const AppActions = {
