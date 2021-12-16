@@ -4,7 +4,6 @@ import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
 import { rgbToHex } from "../snod/util";
 import { centroid } from "@thi.ng/geom";
-import { polygon } from "@thi.ng/geom";
 
 function colorDepthDivider(poly, sampler, invert) {
   let color = sampler.colorAt(centroid(poly));
@@ -61,7 +60,6 @@ function render({ ctx, time, width, height, state }) {
   const polys = createTessedGeometry(width, height, state);
 
   const renderPoly = (poly) => {
-    // console.log(poly);
     ctx.beginPath();
     const p0 = poly.points[0];
     ctx.moveTo(p0[0], p0[1]);
@@ -94,6 +92,7 @@ function render({ ctx, time, width, height, state }) {
   ctx.clip();
 
   // draw grid
+  ctx.lineJoin = "round";
   polys.map(renderPoly);
 }
 

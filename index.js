@@ -1,7 +1,7 @@
 import Stats from "stats.js";
 
 import { settings } from "./src/settings";
-import { createApp } from "./src/state";
+import { createApp, AppActions } from "./src/state";
 import { createGUI } from "./src/gui";
 import { render } from "./src/sketch";
 
@@ -110,11 +110,9 @@ window.onkeydown = function (evt) {
   if (evt.key == "s") {
     downloadCanvas();
   } else if (evt.key == "r") {
-    if (mediaRecorder.state == "recording") {
-      mediaRecorder.stop();
-    } else {
-      mediaRecorder.start();
-      console.log("recording...");
-    }
+    app.dispatch({
+      type: AppActions.RandomizeState,
+      payload: {},
+    });
   }
 };

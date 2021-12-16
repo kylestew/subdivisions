@@ -1,5 +1,6 @@
 import * as dat from "dat.gui";
-import { AppActions, replaceSamplerFromUrl, tessOptions } from "./state";
+import { AppActions, replaceSamplerFromUrl } from "./state";
+import { tessOptions } from "./lib/tesses";
 
 let imageSelector = {};
 
