@@ -35,7 +35,7 @@ function buildRandomTessStack() {
 const initState = {
   sampler: undefined,
 
-  gridDensity: 8,
+  gridDensity: 6,
 
   tessStack: buildRandomTessStack(),
 
@@ -55,7 +55,7 @@ const initState = {
     return tessOptionToName(this.tessStack[3]);
   },
   set tessLevel4(dropped) {},
-  maxDepth: 3,
+  maxDepth: 2,
   invert: true,
 
   enableFill: true,

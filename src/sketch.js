@@ -4,6 +4,7 @@ import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
 import { rgbToHex } from "../snod/util";
 import { centroid } from "@thi.ng/geom";
+import { polygon } from "@thi.ng/geom";
 
 function colorDepthDivider(poly, sampler, invert) {
   let color = sampler.colorAt(centroid(poly));
@@ -25,7 +26,7 @@ function sampledPolyTint(poly, sampler) {
 
 function createTessedGeometry(width, height, state) {
   // setup base grid geometry
-  let baseGeo = grids.diamond(width, height, parseInt(state.gridDensity));
+  let baseGeo = grids.triangle(width, height, parseInt(state.gridDensity));
 
   // tessellate
   let decisionFn = (poly) =>
@@ -87,24 +88,13 @@ function render({ ctx, time, width, height, state }) {
   };
 
   // clip to picture extends (grids will overflow)
+  // clip extra to trim errors at edges
   ctx.beginPath();
-  ctx.rect(0, 0, width, height);
+  ctx.rect(2, 2, width - 4, height - 4);
   ctx.clip();
 
   // draw grid
   polys.map(renderPoly);
-
-  // if stroke enabled, border canvas to clean up edges
-  if (enableStroke) {
-    ctx.strokeStyle = state.lineColor;
-    ctx.lineWidth = state.lineWidth;
-    ctx.beginPath();
-    // inset rect by half stroke width since strokes
-    // are drawn from center
-    let [x, y, w, h] = insetRect([0, 0, width, height], state.lineWidth / 2);
-    ctx.rect(x, y, w, h);
-    ctx.stroke();
-  }
 }
 
 export { render };
