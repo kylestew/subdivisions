@@ -9,7 +9,7 @@ import {
 } from "./lib/tesses";
 
 function randomState() {
-  let willStroke = random.chance(0.3);
+  let willStroke = random.chance(0.2);
 
   return {
     sampler: undefined,
