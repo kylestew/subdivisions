@@ -1,19 +1,8 @@
-import Stats from "stats.js";
-
-import { settings } from "./src/settings";
 import { createApp, AppActions } from "./src/state";
 import { createGUI } from "./src/gui";
-import { render } from "./src/sketch";
+import { render2D, render3D } from "./src/sketch";
 
 let app;
-let ctx;
-let stats;
-let videoStream, mediaRecorder, recordedChunks;
-
-function resetCanvas() {
-  ctx.canvas.width = window.innerWidth;
-  ctx.canvas.height = window.innerHeight;
-}
 
 function download(dataURL, name) {
   const link = document.createElement("a");
@@ -22,46 +11,45 @@ function download(dataURL, name) {
   link.click();
 }
 
-function _render(time) {
-  // clear frame
-  ctx.fillStyle = settings.clearColor || "white";
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+function render() {
+  const state = app.getState();
 
-  ctx.save();
+  let canvas = document.getElementById("canvas");
+  let ctx = canvas.getContext(state.is3D ? "webgl" : "2d");
 
-  // defaults
-  ctx.fillStyle = "#F0F";
-  ctx.strokeStyle = "black";
+  ctx.canvas.width = window.innerWidth;
+  ctx.canvas.height = window.innerHeight;
 
-  render({
+  const params = {
     ctx,
-    time,
     width: ctx.canvas.width,
     height: ctx.canvas.height,
-    state: app.getState(),
-  });
+    state,
+  };
 
-  ctx.restore();
+  if (state.is3D) {
+    render3D(params);
+  } else {
+    render2D(params);
+  }
 }
 
-function _export() {
-  var canvas = document.createElement("canvas");
-  var context = canvas.getContext("2d");
-  let { width, height } = app.getState().sampler;
-  canvas.width = width;
-  canvas.height = height;
-
-  render({
-    ctx: context,
-    exporting: true,
-    time: 0,
-    width,
-    height,
-    state: app.getState(),
-  });
-
-  var dataURL = context.canvas.toDataURL("image/png");
-  download(dataURL, "image");
+function saveFrame() {
+  //   var canvas = document.createElement("canvas");
+  //   var context = canvas.getContext("2d");
+  //   let { width, height } = app.getState().sampler;
+  //   canvas.width = width;
+  //   canvas.height = height;
+  //   render({
+  //     ctx: context,
+  //     exporting: true,
+  //     time: 0,
+  //     width,
+  //     height,
+  //     state: app.getState(),
+  //   });
+  //   var dataURL = context.canvas.toDataURL("image/png");
+  //   download(dataURL, "image");
 }
 
 function init() {
@@ -69,47 +57,8 @@ function init() {
 
   createGUI(app);
 
-  var canvas = document.getElementById("canvas");
-  ctx = canvas.getContext("2d");
-  resetCanvas();
-
-  // TODO: refactor this to be cleaner
-  videoStream = canvas.captureStream(30);
-  var options = { mimeType: "video/webm; codecs=vp9" };
-  mediaRecorder = new MediaRecorder(videoStream, options);
-  recordedChunks = [];
-  mediaRecorder.ondataavailable = function (event) {
-    if (event.data.size > 0) {
-      recordedChunks.push(event.data);
-      var blob = new Blob(recordedChunks, { type: "video/webm" });
-      var videoURL = URL.createObjectURL(blob);
-      download(videoURL, "video");
-      recordedChunks = [];
-    }
-  };
-
-  if (settings.animated === true) {
-    stats = new Stats();
-    stats.showPanel(0);
-    document.body.appendChild(stats.dom);
-  }
-
-  function animationLoop(time) {
-    if (stats) stats.begin();
-
-    _render(time);
-
-    if (stats) stats.end();
-
-    if (settings.animated === true) requestAnimationFrame(animationLoop);
-  }
-
-  if (settings.animated === true) {
-    requestAnimationFrame(animationLoop);
-  } else {
-    app.subscribe(_render);
-    _render();
-  }
+  app.subscribe(render);
+  render();
 }
 
 window.onload = function () {
@@ -117,13 +66,12 @@ window.onload = function () {
 };
 
 window.onresize = function () {
-  resetCanvas();
-  _render();
+  render();
 };
 
 window.onkeydown = function (evt) {
   if (evt.key == "s") {
-    _export();
+    saveFrame();
   } else if (evt.key == "r") {
     app.dispatch({
       type: AppActions.RandomizeState,

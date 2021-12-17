@@ -12,6 +12,8 @@ function randomState() {
   let willStroke = random.chance(0.2);
 
   return {
+    is3D: true,
+
     sampler: undefined,
 
     gridDensity: random.rangeFloor(6, 13),

@@ -3,7 +3,17 @@ import grids from "../snod/grids";
 import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
 import { rgbToHex } from "../snod/util";
-import { centroid } from "@thi.ng/geom";
+import { centroid, polygon } from "@thi.ng/geom";
+import {
+  WebGLRenderer,
+  Scene,
+  Vector3,
+  PerspectiveCamera,
+  LineBasicMaterial,
+  BufferGeometry,
+  Color,
+  Line,
+} from "three";
 
 function colorDepthDivider(poly, sampler, invert) {
   let color = sampler.colorAt(centroid(poly));
@@ -42,7 +52,49 @@ function createTessedGeometry(width, height, state) {
   return tessedPolys.map(polyTintFn);
 }
 
-function render({ ctx, exporting, time, width, height, state }) {
+function render3D({ ctx, exporting, time, width, height, state }) {
+  const renderer = new WebGLRenderer({ canvas: ctx.canvas });
+  renderer.setSize(width, height);
+  renderer.setClearColor(new Color(0x000000));
+
+  const camera = new PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    1,
+    500
+  );
+  camera.position.set(0, 0, 100);
+  camera.lookAt(0, 0, 0);
+
+  const scene = new Scene();
+
+  const material = new LineBasicMaterial({ color: 0x0000ff });
+
+  const points = [];
+  points.push(new Vector3(-10, 0, 0));
+  points.push(new Vector3(0, 10, 0));
+  points.push(new Vector3(10, 0, 0));
+  const geometry = new BufferGeometry().setFromPoints(points);
+
+  const line = new Line(geometry, material);
+  scene.add(line);
+
+  renderer.render(scene, camera);
+
+  // do the actual tesselation
+  // const polys = createTessedGeometry(width, height, state);
+
+  let poly = polygon([
+    [0, 0, 0],
+    [1, 1, 1],
+    [1, 0, 1],
+  ]);
+
+  console.log(poly);
+  // TODO: submit to 3D pipeline
+}
+
+function render2D({ ctx, exporting, time, width, height, state }) {
   const { sampler, enableFill, enableStroke } = state;
   if (sampler == undefined) return;
 
@@ -57,6 +109,10 @@ function render({ ctx, exporting, time, width, height, state }) {
     width = sampler.width;
     height = sampler.height;
   }
+
+  // clear frame
+  // ctx.fillStyle = settings.clearColor || "white";
+  // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   // do the actual tesselation
   const polys = createTessedGeometry(width, height, state);
@@ -98,4 +154,4 @@ function render({ ctx, exporting, time, width, height, state }) {
   polys.map(renderPoly);
 }
 
-export { render };
+export { render2D, render3D };
