@@ -42,19 +42,21 @@ function createTessedGeometry(width, height, state) {
   return tessedPolys.map(polyTintFn);
 }
 
-function render({ ctx, time, width, height, state }) {
+function render({ ctx, exporting, time, width, height, state }) {
   const { sampler, enableFill, enableStroke } = state;
   if (sampler == undefined) return;
 
-  // transform canvas to fit image
-  let trans = transformThatFits(
-    [sampler.width, sampler.height],
-    insetRect([0, 0, width, height], 40) // cropped border
-  );
-  ctx.transform(...trans);
-  // new canvas size
-  width = sampler.width;
-  height = sampler.height;
+  if (!exporting) {
+    // transform canvas to fit image
+    let trans = transformThatFits(
+      [sampler.width, sampler.height],
+      insetRect([0, 0, width, height], 40) // cropped border
+    );
+    ctx.transform(...trans);
+    // new canvas size
+    width = sampler.width;
+    height = sampler.height;
+  }
 
   // do the actual tesselation
   const polys = createTessedGeometry(width, height, state);

@@ -22,11 +22,6 @@ function download(dataURL, name) {
   link.click();
 }
 
-function downloadCanvas() {
-  var dataURL = ctx.canvas.toDataURL("image/png");
-  download(dataURL, "image");
-}
-
 function _render(time) {
   // clear frame
   ctx.fillStyle = settings.clearColor || "white";
@@ -47,6 +42,26 @@ function _render(time) {
   });
 
   ctx.restore();
+}
+
+function _export() {
+  var canvas = document.createElement("canvas");
+  var context = canvas.getContext("2d");
+  let { width, height } = app.getState().sampler;
+  canvas.width = width;
+  canvas.height = height;
+
+  render({
+    ctx: context,
+    exporting: true,
+    time: 0,
+    width,
+    height,
+    state: app.getState(),
+  });
+
+  var dataURL = context.canvas.toDataURL("image/png");
+  download(dataURL, "image");
 }
 
 function init() {
@@ -108,7 +123,7 @@ window.onresize = function () {
 
 window.onkeydown = function (evt) {
   if (evt.key == "s") {
-    downloadCanvas();
+    _export();
   } else if (evt.key == "r") {
     app.dispatch({
       type: AppActions.RandomizeState,
