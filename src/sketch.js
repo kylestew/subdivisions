@@ -9,10 +9,12 @@ import {
   Scene,
   Vector3,
   PerspectiveCamera,
-  LineBasicMaterial,
-  BufferGeometry,
   Color,
-  Line,
+  BufferGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  BufferAttribute,
+  VertexColors,
 } from "three";
 
 function colorDepthDivider(poly, sampler, invert) {
@@ -27,8 +29,13 @@ function colorDepthDivider(poly, sampler, invert) {
 
 function sampledPolyTint(poly, sampler) {
   let color = sampler.colorAt(centroid(poly));
+  color[0] /= 255.0;
+  color[1] /= 255.0;
+  color[2] /= 255.0;
+  delete color[3];
   poly.attribs = {
-    fill: rgbToHex(color),
+    color,
+    // fill: rgbToHex(color),
   };
   return poly;
 }
@@ -53,6 +60,9 @@ function createTessedGeometry(width, height, state) {
 }
 
 function render3D({ ctx, exporting, time, width, height, state }) {
+  const { sampler } = state;
+  if (sampler == undefined) return;
+
   const renderer = new WebGLRenderer({ canvas: ctx.canvas });
   renderer.setSize(width, height);
   renderer.setClearColor(new Color(0x000000));
@@ -60,38 +70,61 @@ function render3D({ ctx, exporting, time, width, height, state }) {
   const camera = new PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
-    1,
-    500
+    0.1,
+    50000
   );
-  camera.position.set(0, 0, 100);
+  camera.position.set(-400, 2000, 3000);
   camera.lookAt(0, 0, 0);
 
+  // do the actual tesselation
+  const polys = createTessedGeometry(width, height, state);
+
+  // let polyA = polygon([
+  //   [-1, -1, 1],
+  //   [1, -1, 1],
+  //   [1, 1, 1],
+  // ]);
+  // polyA.attribs = {
+  //   color: [1, 0, 1],
+  // };
+  // let polyB = polygon([
+  //   [1, 1, 1],
+  //   [-1, 1, 1],
+  //   [-1, -1, 1],
+  // ]);
+  // polyB.attribs = {
+  //   color: [0, 1, 1],
+  // };
+  // const polys = [polyA, polyB];
+
+  const repeatArray = (arr, times) => {
+    return Array.from(
+      {
+        length: times,
+      },
+      () => arr
+    ).flat();
+  };
+
+  // map thi.ng polys to three geom
+  const vertices = new Float32Array(
+    polys.flatMap((poly) => poly.points.flat())
+  );
+  const colors = new Float32Array(
+    polys.flatMap((poly) => repeatArray(poly.attribs.color, poly.points.length))
+  );
+
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new BufferAttribute(vertices, 3));
+  geometry.setAttribute("color", new BufferAttribute(colors, 3));
+
+  const material = new MeshBasicMaterial({ vertexColors: VertexColors });
+  const mesh = new Mesh(geometry, material);
+
   const scene = new Scene();
-
-  const material = new LineBasicMaterial({ color: 0x0000ff });
-
-  const points = [];
-  points.push(new Vector3(-10, 0, 0));
-  points.push(new Vector3(0, 10, 0));
-  points.push(new Vector3(10, 0, 0));
-  const geometry = new BufferGeometry().setFromPoints(points);
-
-  const line = new Line(geometry, material);
-  scene.add(line);
+  scene.add(mesh);
 
   renderer.render(scene, camera);
-
-  // do the actual tesselation
-  // const polys = createTessedGeometry(width, height, state);
-
-  let poly = polygon([
-    [0, 0, 0],
-    [1, 1, 1],
-    [1, 0, 1],
-  ]);
-
-  console.log(poly);
-  // TODO: submit to 3D pipeline
 }
 
 function render2D({ ctx, exporting, time, width, height, state }) {

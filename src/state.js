@@ -16,7 +16,8 @@ function randomState() {
 
     sampler: undefined,
 
-    gridDensity: random.rangeFloor(6, 13),
+    // gridDensity: random.rangeFloor(6, 13),
+    gridDensity: 2,
 
     tessStack: buildRandomTessStack(),
 
@@ -36,7 +37,8 @@ function randomState() {
       return tessOptionToName(this.tessStack[3]);
     },
     set tessLevel4(dropped) {},
-    maxDepth: random.rangeFloor(2, 5),
+    // maxDepth: random.rangeFloor(2, 5),
+    maxDepth: 2,
     invert: random.boolean(),
 
     enableFill: true,
