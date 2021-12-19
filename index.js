@@ -1,33 +1,78 @@
 import { createApp, AppActions } from "./src/state";
 import { createGUI } from "./src/gui";
 import { update } from "./src/scene";
-import { WebGLRenderer, PerspectiveCamera } from "three";
+import { WebGLRenderer, PerspectiveCamera, Vector3, Plane } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
+let app, renderer, camera;
+
+init();
+
 function init() {
-  const app = createApp();
+  app = createApp();
   createGUI(app);
 
-  let canvas = document.getElementById("canvas");
-  const renderer = new WebGLRenderer({ canvas });
-  // TODO: does this need to adapt to screen size changes?
-  // renderer.setSize(width, height);
+  // let canvas = document.getElementById("canvas");
+  renderer = new WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-  const camera = new PerspectiveCamera(
+  camera = new PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
   const controls = new OrbitControls(camera, renderer.domElement);
-  camera.position.set(0, 0, 10);
+  camera.position.set(0, 0, 3.0);
+  controls.minDistance = 1;
+  controls.maxDistance = 10;
   controls.update();
 
-  let scene = update(app.getState());
+  // when values change - rebuild scene
+  let scene = _update();
+  function _update() {
+    let state = app.getState();
+
+    // update needs a valid sampler to work
+    let { sampler } = state;
+    if (sampler == undefined) return;
+    let { width, height } = sampler;
+
+    // create scene
+    let scene = update(state);
+
+    // apply scale and offset needed to center canvas
+    let scale, xSize, ySize;
+    if (width >= height) {
+      scale = 2.0 / width;
+      xSize = 1.0;
+      ySize = (height * scale) / 2;
+    } else {
+      scale = 2.0 / height;
+      xSize = (width * scale) / 2;
+      ySize = 1.0;
+    }
+    scene.scale.set(scale, scale, 1.0);
+    scene.translateX(-xSize);
+    scene.translateY(-ySize);
+
+    // clip to canvas size of [-1, 1] in x, y axis
+    renderer.clippingPlanes = [
+      new Plane(new Vector3(1, 0, 0), xSize),
+      new Plane(new Vector3(-1, 0, 0), xSize),
+      new Plane(new Vector3(0, 1, 0), ySize),
+      new Plane(new Vector3(0, -1, 0), ySize),
+    ];
+
+    return scene;
+  }
   app.subscribe(() => {
-    scene = update(app.getState());
+    scene = _update();
   });
+
+  // render loop
   function animate() {
     requestAnimationFrame(animate);
     controls.update();
@@ -38,13 +83,11 @@ function init() {
   animate();
 }
 
-window.onload = function () {
-  init();
+window.onresize = function () {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 };
-
-// window.onresize = function () {
-//   _render();
-// };
 
 // window.onkeydown = function (evt) {
 //   if (evt.key == "s") {

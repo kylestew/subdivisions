@@ -1,9 +1,8 @@
 import grids from "../snod/grids";
 import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
-import { transformThatFits, insetRect, rgbToHex } from "../snod/util";
+import { rgbToHex } from "../snod/util";
 import { centroid, polygon } from "@thi.ng/geom";
-import { scale23, mulV } from "@thi.ng/matrices";
 import * as THREE from "three";
 
 function simpleDivider(poly) {
@@ -12,7 +11,6 @@ function simpleDivider(poly) {
 
 function update(state) {
   let { sampler, gridDensity, tessStack, maxDepth } = state;
-  if (sampler == undefined) return;
   const { width, height } = sampler;
 
   // setup base grid geometry - working in size of image being sampled
@@ -31,20 +29,15 @@ function update(state) {
   // color polys
   const polyTintFn = (poly) => sampledPolyTint(poly, sampler);
   const polys = tessedPolys.map(polyTintFn);
-
-  // Transform to GL normalized space [-1, 1]
-  let trans = transformThatFits(
-    [width, height],
-    [0, 0, 1, 1]
-    // insetRect([0, 0, width, height], 40) // cropped border
-  );
-  // mulV([], mat, pt)
-  console.log(trans);
+  // console.log("poly count:", polys.length);
 
   // map thi.ng polys to three geom
   const vertices = new Float32Array(
-    polys.flatMap((poly) => poly.points.flat())
+    polys.flatMap((poly) => {
+      return poly.points.flat();
+    })
   );
+  // console.log(vertices);
   // create vertex colors array
   const colors = new Float32Array(
     polys.flatMap((poly) => repeatArray(poly.attribs.color, poly.points.length))
@@ -56,6 +49,7 @@ function update(state) {
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   const material = new THREE.MeshBasicMaterial({
     vertexColors: THREE.VertexColors,
+    side: THREE.DoubleSide,
   });
   const mesh = new THREE.Mesh(geometry, material);
   const scene = new THREE.Scene();
