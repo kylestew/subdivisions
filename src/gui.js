@@ -40,7 +40,7 @@ function createGUI(app) {
     });
   };
 
-  imageSelector = createImageSelector(app);
+  // imageSelector = createImageSelector(app);
 
   var baseGridFolder = gui.addFolder("Base Grid");
   // baseGridFolder.open();

@@ -1,4 +1,4 @@
-import { polygon, tessellate, centroid, arcLength } from "@thi.ng/geom";
+import { polygon, tessellate } from "@thi.ng/geom";
 
 const makePoly = (points) => polygon(points);
 
