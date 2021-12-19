@@ -4,35 +4,22 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
     <title>My Sketch</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        border: 0;
-        outline: 0;
-        font-size: 100%;
-        vertical-align: baseline;
-        background: transparent;
-        color: #fff;
-      }
-      body {
-        background: #000;
-      }
-      #canvas {
-        display: block;
-        width: 100vw;
-        height: 96vh;
-      }
-      .dg .c {
-        color: #fff;
-      }
-    </style>
   </head>
 
   <body>
-    <input type="file" id="imageInput" accept="image/*" />
-    Reload to randomize - 's' to save photo - 'r' to randomize
+    <header>
+      <label for="imageInput" class="image-input"> ⬆ Upload an image </label>
+      <input type="file" id="imageInput" accept="image/*" />
+      Reload to randomize - 's' to save photo - 'r' to randomize
+    </header>
     <canvas id="canvas"></canvas>
     <script type="module" src="/index.js"></script>
   </body>

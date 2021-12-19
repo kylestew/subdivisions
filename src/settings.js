@@ -1,6 +1,7 @@
 const settings = {
   animated: false,
-  clearColor: "black",
+  // clearColor: "black",
+  clearColor: "#c1beb9",
 };
 
 export { settings };
