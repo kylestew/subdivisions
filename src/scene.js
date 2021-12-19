@@ -15,14 +15,14 @@ function update(state) {
   const { width, height } = sampler;
 
   // setup base grid geometry - working in size of image being sampled
-  // const baseGeo = grids.triangle(width, height, parseInt(gridDensity));
-  const baseGeo = [
-    polygon([
-      [width / 2, 0, 0],
-      [width, height, 0],
-      [0, height, 0],
-    ]),
-  ];
+  const baseGeo = grids.triangle(width, height, parseInt(gridDensity));
+  // const baseGeo = [
+  //   polygon([
+  //     [width / 2, 0, 0],
+  //     [width, height, 0],
+  //     [0, height, 0],
+  //   ]),
+  // ];
 
   // tessellate base geometry according to settings
   // split decision function returns a float 0-1 indicating relative
@@ -30,6 +30,7 @@ function update(state) {
   let splitDecisionFn = (poly) => simpleDivider(poly);
   // colorDepthDivider(poly, state.sampler, state.invert);
   let tessedPolys = subdiv(baseGeo, tessStack, splitDecisionFn, maxDepth);
+  // console.log(tessedPolys);
 
   // color polys before ensuring they are all triangles
   const polyTintFn = (poly) => sampledPolyTint(poly, sampler);

@@ -60,12 +60,12 @@ function init() {
     scene.translateY(-ySize);
 
     // clip to canvas size of [-1, 1] in x, y axis
-    // renderer.clippingPlanes = [
-    // new Plane(new Vector3(1, 0, 0), xSize),
-    // new Plane(new Vector3(-1, 0, 0), xSize),
-    // new Plane(new Vector3(0, 1, 0), ySize),
-    // new Plane(new Vector3(0, -1, 0), ySize),
-    // ];
+    renderer.clippingPlanes = [
+      new Plane(new Vector3(1, 0, 0), xSize),
+      new Plane(new Vector3(-1, 0, 0), xSize),
+      new Plane(new Vector3(0, 1, 0), ySize),
+      new Plane(new Vector3(0, -1, 0), ySize),
+    ];
 
     return scene;
   }
