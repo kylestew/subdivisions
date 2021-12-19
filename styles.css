@@ -1,0 +1,106 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #0a0908;
+  background: #fbf8f2;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  padding-right: 42px;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.image-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 32px;
+  border-right: 1px solid #0a0908;
+  padding: 24px;
+  cursor: pointer;
+  height: 50px;
+  background-color: transparent;
+  transition: all 200ms ease-in-out;
+}
+
+.image-input:hover {
+  background-color: #0a0908;
+  color: #fbf8f2;
+}
+
+.dg.ac {
+  position: fixed;
+  bottom: 48px;
+  top: initial !important;
+  height: initial !important;
+}
+
+.dg {
+  font: 14px 'Inter', sans-serif !important;
+  color: #fff !important;
+}
+
+.dg .c > select {
+  color: #fff;
+}
+
+.dg, .main, .a {
+  width: 100% !important;
+}
+
+.dg.a {
+  margin: 0 !important;
+  float: none;
+}
+
+.dg ul {
+  opacity: 0.75;
+}
+
+
+.dg.main .close-button {
+  height: 48px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+  font: 11px 'Inter', sans-serif !important;
+  text-transform: uppercase;
+  font-weight: 600 !important;
+  color: #0a0908 !important;
+  text-shadow: none !important;
+  background-color: #fbf8f2 !important;
+  transition: all 200ms ease-in-out !important;
+}
+
+.dg.main .close-button:hover {
+  background-color: #0a0908 !important;
+  color: #fbf8f2 !important;
+}
+
+#canvas {
+  display: block;
+  width: 100vw;
+  height: calc(100vh - 98px);
+}
