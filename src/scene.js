@@ -2,7 +2,8 @@ import grids from "../snod/grids";
 import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
 import { rgbToHex } from "../snod/util";
-import { centroid, polygon } from "@thi.ng/geom";
+import { centroid, polygon, tessellate } from "@thi.ng/geom";
+import { triFan } from "@thi.ng/geom-tessellate";
 import * as THREE from "three";
 
 function simpleDivider(poly) {
@@ -14,33 +15,47 @@ function update(state) {
   const { width, height } = sampler;
 
   // setup base grid geometry - working in size of image being sampled
-  const baseGeo = grids.triangle(width, height, parseInt(gridDensity));
+  // const baseGeo = grids.triangle(width, height, parseInt(gridDensity));
+  const baseGeo = [
+    polygon([
+      [width / 2, 0, 0],
+      [width, height, 0],
+      [0, height, 0],
+    ]),
+  ];
 
   // tessellate base geometry according to settings
   // split decision function returns a float 0-1 indicating relative
   // depth of tesselation (compared to max depth)
   let splitDecisionFn = (poly) => simpleDivider(poly);
   // colorDepthDivider(poly, state.sampler, state.invert);
-  // let tessedPolys = subdiv(baseGeo, tessStack, splitDecisionFn, maxDepth);
+  let tessedPolys = subdiv(baseGeo, tessStack, splitDecisionFn, maxDepth);
 
-  let tessedPolys = baseGeo;
-  console.log(tessedPolys);
-
-  // color polys
+  // color polys before ensuring they are all triangles
   const polyTintFn = (poly) => sampledPolyTint(poly, sampler);
   const polys = tessedPolys.map(polyTintFn);
-  // console.log("poly count:", polys.length);
+  console.log("poly count:", polys.length);
+
+  // tesselations can lead to non-triangular geometry, split into triangles
+  const normalizedPolys = polys.flatMap((poly) => {
+    if (poly.points.length > 3) {
+      return tessellate(poly, [triFan]).map((pts) =>
+        polygon(pts, poly.attribs)
+      );
+    }
+    return poly;
+  });
+  console.log("normalize poly count:", normalizedPolys.length);
 
   // map thi.ng polys to three geom
   const vertices = new Float32Array(
-    polys.flatMap((poly) => {
-      return poly.points.flat();
-    })
+    normalizedPolys.flatMap((poly) => poly.points.flat())
   );
-  // console.log(vertices);
   // create vertex colors array
   const colors = new Float32Array(
-    polys.flatMap((poly) => repeatArray(poly.attribs.color, poly.points.length))
+    normalizedPolys.flatMap((poly) =>
+      repeatArray(poly.attribs.color, poly.points.length)
+    )
   );
 
   // build mesh geometry and return
@@ -50,6 +65,7 @@ function update(state) {
   const material = new THREE.MeshBasicMaterial({
     vertexColors: THREE.VertexColors,
     side: THREE.DoubleSide,
+    // wireframe: true,
   });
   const mesh = new THREE.Mesh(geometry, material);
   const scene = new THREE.Scene();

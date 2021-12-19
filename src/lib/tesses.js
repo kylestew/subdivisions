@@ -17,9 +17,10 @@ function tessNameToOption(name) {
 }
 
 function buildRandomTessStack() {
-  let fns = Object.values(tessOptions);
-  const getOne = () => fns[Math.floor(Math.random() * fns.length)];
-  return [getOne(), getOne(), getOne(), getOne()];
+  return [triFan, triFan, triFan, triFan];
+  // let fns = Object.values(tessOptions);
+  // const getOne = () => fns[Math.floor(Math.random() * fns.length)];
+  // return [getOne(), getOne(), getOne(), getOne()];
 }
 
 export {
