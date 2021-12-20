@@ -4,6 +4,7 @@ import { createGUI } from "./src/gui";
 import { createMesh } from "./src/sketch";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment";
 
 let app, renderer, camera;
 
@@ -27,6 +28,11 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  // env map
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileCubemapShader();
+  let envMap = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
   camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
@@ -34,8 +40,7 @@ function init() {
     1000
   );
   const controls = new OrbitControls(camera, renderer.domElement);
-  // TODO: select optimal zoom level somehow
-  camera.position.set(0, 0, 3.0);
+  camera.position.set(0, 0, 2.4);
   controls.minDistance = 1;
   controls.maxDistance = 10;
   controls.update();
@@ -52,8 +57,10 @@ function init() {
     let { width, height } = sampler;
 
     // create scene
-    const mesh = createMesh(state);
+    const mesh = createMesh(state, envMap);
     const scene = new THREE.Scene();
+    scene.background = envMap;
+    // scene.background = new THREE.Color(0x444444);
     scene.add(mesh);
 
     // apply scale and offset needed to center canvas
@@ -90,9 +97,6 @@ function init() {
     // const helper2 = new THREE.DirectionalLightHelper(light1, 0.2);
     // scene.add(helper2);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.666);
-    scene.add(ambientLight);
-
     updateLightPositions = (time) => {
       let angle = time / 2048.0;
       light0.position.set(
@@ -109,7 +113,6 @@ function init() {
 
       light0.intensity = 2.4 * brightness;
       light1.intensity = 0.8 * brightness;
-      ambientLight.intensity = 0.666 * brightness;
 
       // helper1.update();
       // helper2.update();
@@ -161,7 +164,6 @@ function download(dataURL, name) {
 
 function saveFrame() {
   let canvas = document.getElementById("canvas");
-  console.log(canvas);
   var dataURL = canvas.toDataURL("image/png");
   download(dataURL, "image");
 }

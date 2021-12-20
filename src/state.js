@@ -14,7 +14,6 @@ function randomState() {
 
   let roughness = Math.random();
   let metalness = 1.0 - roughness;
-  console.log(roughness, metalness);
 
   return {
     sampler: undefined,
