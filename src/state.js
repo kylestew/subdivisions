@@ -46,6 +46,7 @@ function randomState() {
     set tessLevel4(dropped) {},
 
     // style
+    brightness: 1.0,
     roughness,
     metalness,
 

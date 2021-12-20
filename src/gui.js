@@ -93,10 +93,10 @@ function createGUI(app) {
   let styleFolder = gui.addFolder("Style");
   styleFolder.open();
 
-  // styleFolder
-  //   .add(state, "enableFill")
-  //   .name("Fill Polygons")
-  //   .onChange((val) => dispatchUpdate({ enableFill: val }));
+  styleFolder
+    .add(state, "brightness", 0, 2, 0.01)
+    .name("Brightness")
+    .onChange((val) => dispatchUpdate({ brightness: val }));
 
   styleFolder
     .add(state, "roughness", 0, 1, 0.01)

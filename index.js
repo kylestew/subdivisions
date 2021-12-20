@@ -17,8 +17,12 @@ function init() {
   stats.showPanel(0);
   document.body.appendChild(stats.dom);
 
-  // let canvas = document.getElementById("canvas");
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  let canvas = document.getElementById("canvas");
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    preserveDrawingBuffer: true,
+    antialias: true,
+  });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
@@ -43,7 +47,7 @@ function init() {
     let state = app.getState();
 
     // update needs a valid sampler to work
-    let { sampler } = state;
+    let { sampler, brightness } = state;
     if (sampler == undefined) return;
     let { width, height } = sampler;
 
@@ -76,7 +80,7 @@ function init() {
     ];
 
     // add lighting
-    let light0 = new THREE.DirectionalLight(0xffffff, 2.0);
+    let light0 = new THREE.DirectionalLight(0xffffff, 2.4);
     scene.add(light0);
     let light1 = new THREE.DirectionalLight(0xffffff, 0.8);
     scene.add(light1);
@@ -86,7 +90,7 @@ function init() {
     // const helper2 = new THREE.DirectionalLightHelper(light1, 0.2);
     // scene.add(helper2);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.333);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.666);
     scene.add(ambientLight);
 
     updateLightPositions = (time) => {
@@ -100,8 +104,12 @@ function init() {
       light1.position.set(
         2 * Math.sin(angle),
         2 * Math.cos(angle),
-        0.5 + 0.3 * Math.cos(angle * 0.333)
+        0.5 + 0.3 * Math.cos(angle * 0.222)
       );
+
+      light0.intensity = 2.4 * brightness;
+      light1.intensity = 0.8 * brightness;
+      ambientLight.intensity = 0.666 * brightness;
 
       // helper1.update();
       // helper2.update();
@@ -135,7 +143,7 @@ window.onresize = function () {
 
 window.onkeydown = function (evt) {
   if (evt.key == "s") {
-    //     saveFrame();
+    saveFrame();
   } else if (evt.key == "r") {
     app.dispatch({
       type: AppActions.RandomizeState,
@@ -144,27 +152,16 @@ window.onkeydown = function (evt) {
   }
 };
 
-// function download(dataURL, name) {
-//   const link = document.createElement("a");
-//   link.href = dataURL;
-//   link.download = name;
-//   link.click();
-// }
+function download(dataURL, name) {
+  const link = document.createElement("a");
+  link.href = dataURL;
+  link.download = name;
+  link.click();
+}
 
-// function saveFrame() {
-//   var canvas = document.createElement("canvas");
-//   var context = canvas.getContext("2d");
-//   let { width, height } = app.getState().sampler;
-//   canvas.width = width;
-//   canvas.height = height;
-//   render({
-//     ctx: context,
-//     exporting: true,
-//     time: 0,
-//     width,
-//     height,
-//     state: app.getState(),
-//   });
-//   var dataURL = context.canvas.toDataURL("image/png");
-//   download(dataURL, "image");
-// }
+function saveFrame() {
+  let canvas = document.getElementById("canvas");
+  console.log(canvas);
+  var dataURL = canvas.toDataURL("image/png");
+  download(dataURL, "image");
+}
