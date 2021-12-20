@@ -2,7 +2,13 @@ import { polygon, tessellate } from "@thi.ng/geom";
 import { normalFromPoly } from "./normals";
 import * as v from "@thi.ng/vectors";
 
-const makePoly = (points) => polygon(points);
+function centroid(poly) {
+  let total = [0, 0, 0];
+  poly.points.forEach((pt) => {
+    v.add(null, total, pt);
+  });
+  return v.divN([], total, poly.points.length);
+}
 
 /*
  * Grows new polys in the direction of face normal of original poly
@@ -10,10 +16,12 @@ const makePoly = (points) => polygon(points);
  * points - points of new polys after tessellation
  * depth - recursion dept of current tessellation
  */
+
 function growFromPoly(poly, points, growthScale) {
+  let cent = centroid(poly);
   return polygon(
     points.map((pt) => {
-      if (!poly.points.includes(pt)) {
+      if (v.dist(pt, cent) < 1) {
         // extrude this point along original poly normal
         let norm = normalFromPoly(poly);
         return v.add([], pt, v.mulN([], norm, growthScale));

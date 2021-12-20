@@ -1,3 +1,4 @@
+import * as Stats from "stats.js";
 import { createApp, AppActions } from "./src/state";
 import { createGUI } from "./src/gui";
 import { createMesh } from "./src/sketch";
@@ -11,6 +12,10 @@ init();
 function init() {
   app = createApp();
   createGUI(app);
+
+  let stats = new Stats();
+  stats.showPanel(0);
+  document.body.appendChild(stats.dom);
 
   // let canvas = document.getElementById("canvas");
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -58,9 +63,9 @@ function init() {
       xSize = (width * scale) / 2;
       ySize = 1.0;
     }
-    scene.scale.set(scale, scale, scale);
+    scene.scale.set(scale, -scale, scale);
     scene.translateX(-xSize);
-    scene.translateY(-ySize);
+    scene.translateY(ySize);
 
     // clip to canvas size of [-1, 1] in x, y axis
     renderer.clippingPlanes = [
@@ -76,7 +81,7 @@ function init() {
     light.target = mesh;
     scene.add(light);
 
-    const ambientLight = new THREE.AmbientLight(0x666666);
+    const ambientLight = new THREE.AmbientLight(0xffffff);
     scene.add(ambientLight);
 
     return scene;
@@ -88,16 +93,17 @@ function init() {
   // render loop
   var angle = 0;
   function animate() {
-    requestAnimationFrame(animate);
+    stats.begin();
     controls.update();
     if (scene) {
       angle -= 0.01;
-      light.position.x = 5 * Math.sin(angle);
-      light.position.y = 5 * Math.cos(angle);
-      // console.log(light.position);
+      light.position.x = 8 * Math.sin(angle);
+      light.position.y = 8 * Math.cos(angle);
 
       renderer.render(scene, camera);
     }
+    stats.end();
+    requestAnimationFrame(animate);
   }
   animate();
 }

@@ -1,15 +1,11 @@
 import grids from "../snod/grids";
 import { luminosity } from "../snod/color";
+import { repeatArray } from "../snod/util";
 import { subdiv } from "./lib/subdiv";
 import { normalFromPoly } from "./lib/normals";
-import { rgbToHex } from "../snod/util";
 import { centroid, polygon, tessellate } from "@thi.ng/geom";
 import { triFan } from "@thi.ng/geom-tessellate";
 import * as THREE from "three";
-
-function simpleDivider(poly) {
-  return 0.5; // half depth
-}
 
 function createMesh(state) {
   let {
@@ -21,17 +17,17 @@ function createMesh(state) {
     growthFalloff,
   } = state;
   const { width, height } = sampler;
+  const largestSide = width > height ? width : height;
 
-  // setup base grid geometry - working in size of image being sampled
+  /* === BASE GEOMETRY === */
+  // setup base grid geometry
+  // working in size of image being sampled
   const baseGeo = grids.triangle(width, height, parseInt(gridDensity));
-  // const baseGeo = [
-  //   polygon([
-  //     [width / 2, 0, 0],
-  //     [width, height, 0],
-  //     [0, height, 0],
-  //   ]),
-  // ];
+  // const baseGeo = grids.testTriangle(width, height);
+  // const baseGeo = grids.testRectangle(width, height);
+  describeComplexity("baseGeo", baseGeo);
 
+  /* === TESSELLATION STAGE === */
   // tessellate base geometry according to settings
   // split decision function returns a float 0-1 indicating relative
   // depth of tesselation (compared to max depth)
@@ -43,41 +39,44 @@ function createMesh(state) {
     tessStack,
     splitDecisionFn,
     maxDepth,
-    growthAmount,
+    growthAmount * largestSide,
     growthFalloff
   );
-  // console.log(tessedPolys);
+  describeComplexity("tessedPolys", tessedPolys);
 
+  /* === COLORIZATION STAGE === */
   // color polys before ensuring they are all triangles
   const polyTintFn = (poly) => sampledPolyTint(poly, sampler);
-  const polys = tessedPolys.map(polyTintFn);
-  console.log("poly count:", polys.length);
+  const coloredPolys = tessedPolys.map(polyTintFn);
+  describeComplexity("coloredPolys", coloredPolys);
 
-  // tesselations can lead to non-triangular geometry, split into triangles
-  const normalizedPolys = polys.flatMap((poly) => {
-    if (poly.points.length > 3) {
-      return tessellate(poly, [triFan]).map((pts) =>
-        polygon(pts, poly.attribs)
-      );
-    }
-    return poly;
+  /* === FINAL GEOMETRY === */
+  const normalizedPolys = makeRenderable(coloredPolys);
+  describeComplexity("normalizedPolys", normalizedPolys);
+  let geometry = createGeometry(normalizedPolys);
+  const material = new THREE.MeshPhongMaterial({
+    color: 0xaaaaaa,
+    specular: 0xffffff,
+    shininess: 10,
+    vertexColors: THREE.VertexColors,
+    side: THREE.DoubleSide,
+    // wireframe: true,
   });
-  console.log("normalize poly count:", normalizedPolys.length);
+  return new THREE.Mesh(geometry, material);
+}
 
+function createGeometry(polys) {
   // map thi.ng polys to three geom
   const vertices = new Float32Array(
-    normalizedPolys.flatMap((poly) => poly.points.flat())
+    polys.flatMap((poly) => poly.points.flat())
   );
   // create normals from triangles
   const normals = new Float32Array(
-    normalizedPolys.flatMap((poly) => repeatArray(normalFromPoly(poly), 3))
+    polys.flatMap((poly) => repeatArray(normalFromPoly(poly), 3))
   );
-  // console.log(normals);
   // create vertex colors array
   const colors = new Float32Array(
-    normalizedPolys.flatMap((poly) =>
-      repeatArray(poly.attribs.color, poly.points.length)
-    )
+    polys.flatMap((poly) => repeatArray(poly.attribs.color, poly.points.length))
   );
 
   // build mesh geometry and return
@@ -86,34 +85,35 @@ function createMesh(state) {
   geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
-  const material = new THREE.MeshPhongMaterial({
-    color: 0xaaaaaa,
-    specular: 0xffffff,
-    shininess: 10,
-    vertexColors: THREE.VertexColors,
-    side: THREE.DoubleSide,
-  });
-  return new THREE.Mesh(geometry, material);
+
+  return geometry;
 }
 
-const repeatArray = (arr, times) => {
-  return Array.from(
-    {
-      length: times,
-    },
-    () => arr
-  ).flat();
-};
+function makeRenderable(polys) {
+  // tesselations can lead to non-triangular geometry, split into triangles
+  return polys.flatMap((poly) => {
+    if (poly.points.length > 3) {
+      return tessellate(poly, [triFan]).map((pts) =>
+        polygon(pts, poly.attribs)
+      );
+    }
+    return poly;
+  });
+}
 
 function sampledPolyTint(poly, sampler) {
   let color = sampler
     .colorAt(centroid(poly))
-    .map((c) => c / 255.0)
-    .slice(0, 3);
+    .slice(0, 3)
+    .map((c) => c / 255.0);
   poly.attribs = {
     color,
   };
   return poly;
+}
+
+function simpleDivider(poly) {
+  return 1.0; // full depth
 }
 
 function colorDepthDivider(poly, sampler, invert) {
@@ -124,6 +124,17 @@ function colorDepthDivider(poly, sampler, invert) {
     return 1.0 - Math.log10(lumi * 9 + 1);
   }
   return Math.log10(lumi * 9 + 1);
+}
+
+function describeComplexity(stage, polys) {
+  let length = polys.length;
+  let renderable = polys.filter((poly) => poly.points.length != 3).length;
+  console.log(
+    stage,
+    length,
+    renderable == 0 ? "renderable" : "non-renderable"
+    // polys
+  );
 }
 
 export { createMesh };

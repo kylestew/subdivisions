@@ -33,13 +33,11 @@ function randomState() {
       return tessOptionToName(this.tessStack[3]);
     },
     set tessLevel4(dropped) {},
-    // maxDepth: random.rangeFloor(2, 5),
-    maxDepth: 2,
+    maxDepth: random.rangeFloor(2, 5),
     invert: random.boolean(),
 
-    growthAmount: 90,
-    growthFalloff: 0.9,
-    // TODO: 3d depth
+    growthAmount: 0.02, // relative to largest side of canvas
+    growthFalloff: 0.5,
     // specular / flat / shininess
     // other materials?
     // light settings and brightness
