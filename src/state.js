@@ -14,11 +14,9 @@ function randomState() {
   return {
     sampler: undefined,
 
-    // gridDensity: random.rangeFloor(6, 13),
-    gridDensity: 2,
+    gridDensity: random.rangeFloor(6, 13),
 
     tessStack: buildRandomTessStack(),
-
     get tessLevel1() {
       return tessOptionToName(this.tessStack[0]);
     },
@@ -38,6 +36,13 @@ function randomState() {
     // maxDepth: random.rangeFloor(2, 5),
     maxDepth: 2,
     invert: random.boolean(),
+
+    growthAmount: 90,
+    growthFalloff: 0.9,
+    // TODO: 3d depth
+    // specular / flat / shininess
+    // other materials?
+    // light settings and brightness
 
     enableFill: true,
     enableStroke: willStroke,

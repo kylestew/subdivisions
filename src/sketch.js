@@ -1,6 +1,7 @@
 import grids from "../snod/grids";
 import { luminosity } from "../snod/color";
 import { subdiv } from "./lib/subdiv";
+import { normalFromPoly } from "./lib/normals";
 import { rgbToHex } from "../snod/util";
 import { centroid, polygon, tessellate } from "@thi.ng/geom";
 import { triFan } from "@thi.ng/geom-tessellate";
@@ -10,8 +11,15 @@ function simpleDivider(poly) {
   return 0.5; // half depth
 }
 
-function update(state) {
-  let { sampler, gridDensity, tessStack, maxDepth } = state;
+function createMesh(state) {
+  let {
+    sampler,
+    gridDensity,
+    tessStack,
+    maxDepth,
+    growthAmount,
+    growthFalloff,
+  } = state;
   const { width, height } = sampler;
 
   // setup base grid geometry - working in size of image being sampled
@@ -27,9 +35,17 @@ function update(state) {
   // tessellate base geometry according to settings
   // split decision function returns a float 0-1 indicating relative
   // depth of tesselation (compared to max depth)
-  let splitDecisionFn = (poly) => simpleDivider(poly);
-  // colorDepthDivider(poly, state.sampler, state.invert);
-  let tessedPolys = subdiv(baseGeo, tessStack, splitDecisionFn, maxDepth);
+  let splitDecisionFn = (poly) =>
+    colorDepthDivider(poly, state.sampler, state.invert);
+  // simpleDivider(poly);
+  let tessedPolys = subdiv(
+    baseGeo,
+    tessStack,
+    splitDecisionFn,
+    maxDepth,
+    growthAmount,
+    growthFalloff
+  );
   // console.log(tessedPolys);
 
   // color polys before ensuring they are all triangles
@@ -52,6 +68,11 @@ function update(state) {
   const vertices = new Float32Array(
     normalizedPolys.flatMap((poly) => poly.points.flat())
   );
+  // create normals from triangles
+  const normals = new Float32Array(
+    normalizedPolys.flatMap((poly) => repeatArray(normalFromPoly(poly), 3))
+  );
+  // console.log(normals);
   // create vertex colors array
   const colors = new Float32Array(
     normalizedPolys.flatMap((poly) =>
@@ -62,16 +83,17 @@ function update(state) {
   // build mesh geometry and return
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-  const material = new THREE.MeshBasicMaterial({
+  geometry.computeVertexNormals();
+  const material = new THREE.MeshPhongMaterial({
+    color: 0xaaaaaa,
+    specular: 0xffffff,
+    shininess: 10,
     vertexColors: THREE.VertexColors,
     side: THREE.DoubleSide,
-    // wireframe: true,
   });
-  const mesh = new THREE.Mesh(geometry, material);
-  const scene = new THREE.Scene();
-  scene.add(mesh);
-  return scene;
+  return new THREE.Mesh(geometry, material);
 }
 
 const repeatArray = (arr, times) => {
@@ -94,14 +116,14 @@ function sampledPolyTint(poly, sampler) {
   return poly;
 }
 
-// function colorDepthDivider(poly, sampler, invert) {
-//   let color = sampler.colorAt(centroid(poly));
-//   let lumi = luminosity(color);
-//   // shape luminosity so its more responsive on the low end: [0-1] -> [0-1]
-//   if (invert) {
-//     return 1.0 - Math.log10(lumi * 9 + 1);
-//   }
-//   return Math.log10(lumi * 9 + 1);
-// }
+function colorDepthDivider(poly, sampler, invert) {
+  let color = sampler.colorAt(centroid(poly));
+  let lumi = luminosity(color);
+  // shape luminosity so its more responsive on the low end: [0-1] -> [0-1]
+  if (invert) {
+    return 1.0 - Math.log10(lumi * 9 + 1);
+  }
+  return Math.log10(lumi * 9 + 1);
+}
 
-export { update };
+export { createMesh };

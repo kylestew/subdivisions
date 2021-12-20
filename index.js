@@ -1,7 +1,7 @@
 import { createApp, AppActions } from "./src/state";
 import { createGUI } from "./src/gui";
-import { update } from "./src/scene";
-import { WebGLRenderer, PerspectiveCamera, Vector3, Plane } from "three";
+import { createMesh } from "./src/sketch";
+import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 let app, renderer, camera;
@@ -13,12 +13,12 @@ function init() {
   createGUI(app);
 
   // let canvas = document.getElementById("canvas");
-  renderer = new WebGLRenderer({ canvas, antialias: true });
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  camera = new PerspectiveCamera(
+  camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
@@ -33,6 +33,7 @@ function init() {
 
   // when values change - rebuild scene
   let scene = _update();
+  let light;
   function _update() {
     let state = app.getState();
 
@@ -42,7 +43,9 @@ function init() {
     let { width, height } = sampler;
 
     // create scene
-    let scene = update(state);
+    let mesh = createMesh(state);
+    const scene = new THREE.Scene();
+    scene.add(mesh);
 
     // apply scale and offset needed to center canvas
     let scale, xSize, ySize;
@@ -55,17 +58,26 @@ function init() {
       xSize = (width * scale) / 2;
       ySize = 1.0;
     }
-    scene.scale.set(scale, scale, 1.0);
+    scene.scale.set(scale, scale, scale);
     scene.translateX(-xSize);
     scene.translateY(-ySize);
 
     // clip to canvas size of [-1, 1] in x, y axis
     renderer.clippingPlanes = [
-      new Plane(new Vector3(1, 0, 0), xSize),
-      new Plane(new Vector3(-1, 0, 0), xSize),
-      new Plane(new Vector3(0, 1, 0), ySize),
-      new Plane(new Vector3(0, -1, 0), ySize),
+      new THREE.Plane(new THREE.Vector3(1, 0, 0), xSize),
+      new THREE.Plane(new THREE.Vector3(-1, 0, 0), xSize),
+      new THREE.Plane(new THREE.Vector3(0, 1, 0), ySize),
+      new THREE.Plane(new THREE.Vector3(0, -1, 0), ySize),
     ];
+
+    // add lighting
+    light = new THREE.DirectionalLight(0xffffff);
+    light.position.set(-10, 0, 1.0);
+    light.target = mesh;
+    scene.add(light);
+
+    const ambientLight = new THREE.AmbientLight(0x666666);
+    scene.add(ambientLight);
 
     return scene;
   }
@@ -74,10 +86,16 @@ function init() {
   });
 
   // render loop
+  var angle = 0;
   function animate() {
     requestAnimationFrame(animate);
     controls.update();
     if (scene) {
+      angle -= 0.01;
+      light.position.x = 5 * Math.sin(angle);
+      light.position.y = 5 * Math.cos(angle);
+      // console.log(light.position);
+
       renderer.render(scene, camera);
     }
   }
