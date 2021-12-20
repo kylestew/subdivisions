@@ -38,7 +38,7 @@ function init() {
 
   // when values change - rebuild scene
   let scene = _update();
-  let light;
+  let updateLightPositions;
   function _update() {
     let state = app.getState();
 
@@ -48,7 +48,7 @@ function init() {
     let { width, height } = sampler;
 
     // create scene
-    let mesh = createMesh(state);
+    const mesh = createMesh(state);
     const scene = new THREE.Scene();
     scene.add(mesh);
 
@@ -63,9 +63,9 @@ function init() {
       xSize = (width * scale) / 2;
       ySize = 1.0;
     }
-    scene.scale.set(scale, -scale, scale);
-    scene.translateX(-xSize);
-    scene.translateY(ySize);
+    mesh.scale.set(scale, -scale, scale);
+    mesh.translateX(-xSize);
+    mesh.translateY(ySize);
 
     // clip to canvas size of [-1, 1] in x, y axis
     renderer.clippingPlanes = [
@@ -76,13 +76,36 @@ function init() {
     ];
 
     // add lighting
-    light = new THREE.DirectionalLight(0xffffff);
-    light.position.set(-10, 0, 1.0);
-    light.target = mesh;
-    scene.add(light);
+    let light0 = new THREE.DirectionalLight(0xffffff, 2.0);
+    scene.add(light0);
+    let light1 = new THREE.DirectionalLight(0xffffff, 0.8);
+    scene.add(light1);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff);
+    // const helper1 = new THREE.DirectionalLightHelper(light0, 0.2);
+    // scene.add(helper1);
+    // const helper2 = new THREE.DirectionalLightHelper(light1, 0.2);
+    // scene.add(helper2);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.333);
     scene.add(ambientLight);
+
+    updateLightPositions = (time) => {
+      let angle = time / 2048.0;
+      light0.position.set(
+        2 * Math.cos(angle),
+        2 * Math.sin(angle),
+        0.2 + 0.2 * Math.sin(angle * 0.333)
+      );
+
+      light1.position.set(
+        2 * Math.sin(angle),
+        2 * Math.cos(angle),
+        0.5 + 0.3 * Math.cos(angle * 0.333)
+      );
+
+      // helper1.update();
+      // helper2.update();
+    };
 
     return scene;
   }
@@ -91,15 +114,11 @@ function init() {
   });
 
   // render loop
-  var angle = 0;
-  function animate() {
+  function animate(time) {
     stats.begin();
     controls.update();
     if (scene) {
-      angle -= 0.01;
-      light.position.x = 8 * Math.sin(angle);
-      light.position.y = 8 * Math.cos(angle);
-
+      updateLightPositions(time);
       renderer.render(scene, camera);
     }
     stats.end();
@@ -114,16 +133,16 @@ window.onresize = function () {
   renderer.setSize(window.innerWidth, window.innerHeight);
 };
 
-// window.onkeydown = function (evt) {
-//   if (evt.key == "s") {
-//     saveFrame();
-//   } else if (evt.key == "r") {
-//     app.dispatch({
-//       type: AppActions.RandomizeState,
-//       payload: {},
-//     });
-//   }
-// };
+window.onkeydown = function (evt) {
+  if (evt.key == "s") {
+    //     saveFrame();
+  } else if (evt.key == "r") {
+    app.dispatch({
+      type: AppActions.RandomizeState,
+      payload: {},
+    });
+  }
+};
 
 // function download(dataURL, name) {
 //   const link = document.createElement("a");

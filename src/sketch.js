@@ -23,8 +23,6 @@ function createMesh(state) {
   // setup base grid geometry
   // working in size of image being sampled
   const baseGeo = grids.triangle(width, height, parseInt(gridDensity));
-  // const baseGeo = grids.testTriangle(width, height);
-  // const baseGeo = grids.testRectangle(width, height);
   describeComplexity("baseGeo", baseGeo);
 
   /* === TESSELLATION STAGE === */
@@ -33,7 +31,6 @@ function createMesh(state) {
   // depth of tesselation (compared to max depth)
   let splitDecisionFn = (poly) =>
     colorDepthDivider(poly, state.sampler, state.invert);
-  // simpleDivider(poly);
   let tessedPolys = subdiv(
     baseGeo,
     tessStack,
@@ -54,12 +51,12 @@ function createMesh(state) {
   const normalizedPolys = makeRenderable(coloredPolys);
   describeComplexity("normalizedPolys", normalizedPolys);
   let geometry = createGeometry(normalizedPolys);
-  const material = new THREE.MeshPhongMaterial({
-    color: 0xaaaaaa,
-    specular: 0xffffff,
-    shininess: 10,
+  const material = new THREE.MeshStandardMaterial({
     vertexColors: THREE.VertexColors,
     side: THREE.DoubleSide,
+    color: 0xfffffff,
+    roughness: state.roughness,
+    metalness: state.metalness,
     // wireframe: true,
   });
   return new THREE.Mesh(geometry, material);

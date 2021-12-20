@@ -42,10 +42,10 @@ function createGUI(app) {
 
   // imageSelector = createImageSelector(app);
 
-  var baseGridFolder = gui.addFolder("Base Grid");
-  // baseGridFolder.open();
+  var tessFolder = gui.addFolder("Tessellation");
+  // tessFolder.open();
 
-  baseGridFolder
+  tessFolder
     .add(state, "gridDensity")
     .name("Density")
     .min(2)
@@ -53,13 +53,20 @@ function createGUI(app) {
     .step(1)
     .onChange((val) => dispatchUpdate({ gridDensity: val }));
 
-  var tessFolder = gui.addFolder("Tessellation");
-  // tessFolder.open();
-
   tessFolder
     .add(state, "maxDepth", 1, 5, 1)
-    .name("Max Depth")
+    .name("Max Recursion")
     .onChange((val) => dispatchUpdate({ maxDepth: val }));
+
+  tessFolder
+    .add(state, "growthAmount", 0, 0.05, 0.001)
+    .name("Growth")
+    .onChange((val) => dispatchUpdate({ growthAmount: val }));
+
+  tessFolder
+    .add(state, "growthFalloff", 0, 1.2, 0.01)
+    .name("Falloff")
+    .onChange((val) => dispatchUpdate({ growthFalloff: val }));
 
   tessFolder
     .add(state, "invert")
@@ -84,37 +91,47 @@ function createGUI(app) {
     .onChange((val) => setTessLevel(3, val));
 
   let styleFolder = gui.addFolder("Style");
-  // styleFolder.open();
+  styleFolder.open();
+
+  // styleFolder
+  //   .add(state, "enableFill")
+  //   .name("Fill Polygons")
+  //   .onChange((val) => dispatchUpdate({ enableFill: val }));
 
   styleFolder
-    .add(state, "enableFill")
-    .name("Fill Polygons")
-    .onChange((val) => dispatchUpdate({ enableFill: val }));
+    .add(state, "roughness", 0, 1, 0.01)
+    .name("Roughness")
+    .onChange((val) => dispatchUpdate({ roughness: val }));
 
   styleFolder
-    .add(state, "enableStroke")
-    .name("Draw Lines")
-    .onChange((val) => dispatchUpdate({ enableStroke: val }));
+    .add(state, "metalness", 0, 1, 0.01)
+    .name("Metalness")
+    .onChange((val) => dispatchUpdate({ metalness: val }));
 
-  styleFolder
-    .add(state, "lineWidth")
-    .name("Line Width")
-    .min(0.1)
-    .max(24.0)
-    .step(0.1)
-    .onChange((val) => dispatchUpdate({ lineWidth: val }));
+  // styleFolder
+  //   .add(state, "enableStroke")
+  //   .name("Draw Lines")
+  //   .onChange((val) => dispatchUpdate({ enableStroke: val }));
 
-  styleFolder
-    .addColor(state, "lineColor")
-    .onChange((val) => dispatchUpdate({ lineColor: val }));
+  // styleFolder
+  //   .add(state, "lineWidth")
+  //   .name("Line Width")
+  //   .min(0.1)
+  //   .max(24.0)
+  //   .step(0.1)
+  //   .onChange((val) => dispatchUpdate({ lineWidth: val }));
 
-  styleFolder
-    .add(state, "lineOpacity")
-    .name("Line Opacity")
-    .min(0)
-    .max(255)
-    .step(1)
-    .onChange((val) => dispatchUpdate({ lineOpacity: val }));
+  // styleFolder
+  //   .addColor(state, "lineColor")
+  //   .onChange((val) => dispatchUpdate({ lineColor: val }));
+
+  // styleFolder
+  //   .add(state, "lineOpacity")
+  //   .name("Line Opacity")
+  //   .min(0)
+  //   .max(255)
+  //   .step(1)
+  //   .onChange((val) => dispatchUpdate({ lineOpacity: val }));
 }
 
 export { createGUI };
