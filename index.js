@@ -1,12 +1,13 @@
 import * as Stats from "stats.js";
-import { createApp, AppActions } from "./src/state";
+import { createApp, AppActions, replaceSamplerFromUrl } from "./src/state";
 import { createGUI } from "./src/gui";
 import { createMesh } from "./src/sketch";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment";
+import { randomImage } from "./src/lib/images";
 
-let app, renderer, camera;
+let app, canvasContainer, renderer, camera;
 
 init();
 
@@ -14,10 +15,11 @@ function init() {
   app = createApp();
   createGUI(app);
 
-  let stats = new Stats();
+  // let stats = new Stats();
   // stats.showPanel(0);
   // document.body.appendChild(stats.dom);
 
+  canvasContainer = document.getElementById("canvas-container");
   let canvas = document.getElementById("canvas");
   renderer = new THREE.WebGLRenderer({
     canvas,
@@ -25,8 +27,7 @@ function init() {
     antialias: true,
   });
   // renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
   // env map
   const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -35,7 +36,7 @@ function init() {
 
   camera = new THREE.PerspectiveCamera(
     45,
-    window.innerWidth / window.innerHeight,
+    canvas.clientWidth / canvas.clientHeight,
     0.1,
     1000
   );
@@ -126,28 +127,29 @@ function init() {
 
   // render loop
   function animate(time) {
-    stats.begin();
+    // stats.begin();
     controls.update();
     if (scene) {
       updateLightPositions(time);
       renderer.render(scene, camera);
     }
-    stats.end();
+    // stats.end();
     requestAnimationFrame(animate);
   }
   animate();
 }
 
 window.onresize = function () {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
 };
 
 window.onkeydown = function (evt) {
-  console.log(evt);
   if (evt.key == "s") {
     saveFrame();
+  } else if (evt.key == "i") {
+    replaceSamplerFromUrl(randomImage(), app);
   } else if (evt.key == "r" && evt.metaKey == false) {
     app.dispatch({
       type: AppActions.RandomizeState,

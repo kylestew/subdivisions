@@ -21,9 +21,11 @@
     <header>
       <label for="imageInput" class="image-input"> ⬆ Upload an image </label>
       <input type="file" id="imageInput" accept="image/*" />
-      's' to save photo - 'r' to randomize
+      (r) random effect - (i) random image - (s) capture photo
     </header>
-    <canvas id="canvas"></canvas>
+    <div id="canvas-container">
+      <canvas id="canvas"></canvas>
+    </div>
     <script type="module" src="/index.js"></script>
   </body>
 </html>

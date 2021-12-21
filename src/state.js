@@ -67,7 +67,7 @@ const AppActions = {
 function appReducer(state = randomState(), action) {
   switch (action.type) {
     case AppActions.ReplaceSampler:
-      return Object.assign(randomState(), { sampler: action.payload });
+      return Object.assign({}, state, { sampler: action.payload });
 
     case AppActions.SetTessLevel:
       let { level, name } = action.payload;
