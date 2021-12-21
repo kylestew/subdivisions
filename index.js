@@ -12,6 +12,8 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader.js";
 import { LUTCubeLoader } from "three/examples/jsm/loaders/LUTCubeLoader";
 import { LUTPass } from "three/examples/jsm/postprocessing/LUTPass.js";
+import hdr from "/assets/hdrs/venice_sunset_1k.hdr?url";
+import lut from "/assets/luts/Bourbon 64.CUBE?url";
 
 let app, stats, canvasContainer, renderer, composer, camera, controls;
 
@@ -35,19 +37,17 @@ function init() {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
   // start loading EnvMap
-  new RGBELoader()
-    .setPath("assets/")
-    .load("venice_sunset_1k.hdr", function (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      app.dispatch({
-        type: AppActions.UpdateParam,
-        payload: { envMap: texture },
-      });
+  new RGBELoader().load(hdr, function (texture) {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    app.dispatch({
+      type: AppActions.UpdateParam,
+      payload: { envMap: texture },
     });
+  });
 
   // start loading" LUT
-  const name = "Bourbon 64.CUBE";
-  new LUTCubeLoader().load("assets/luts/" + name, function (result) {
+  console.log(lut);
+  new LUTCubeLoader().load(lut, function (result) {
     app.dispatch({
       type: AppActions.UpdateParam,
       payload: { lut: result },
