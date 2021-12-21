@@ -13,7 +13,7 @@ import { LUTCubeLoader } from "three/examples/jsm/loaders/LUTCubeLoader";
 import { LUTPass } from "three/examples/jsm/postprocessing/LUTPass.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import hdr from "/assets/hdrs/venice_sunset_1k.hdr?url";
-import lut from "/assets/luts/Bourbon 64.CUBE?url";
+import lut from "/assets/luts/Everyday_Pro_Color.cube?url";
 
 let app, canvasContainer, renderer, composer, camera, controls;
 
