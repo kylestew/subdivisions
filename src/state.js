@@ -77,7 +77,6 @@ function appReducer(state = randomState(), action) {
       return Object.assign({}, state, { tessStack });
 
     case AppActions.UpdateParam:
-      console.log("update", action.payload);
       return Object.assign({}, state, action.payload);
 
     case AppActions.RandomizeState:

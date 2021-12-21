@@ -1,4 +1,3 @@
-import * as Stats from "stats.js";
 import { createApp, AppActions, replaceSamplerFromUrl } from "./src/state";
 import { createGUI } from "./src/gui";
 import { createMesh } from "./src/sketch";
@@ -16,14 +15,13 @@ import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import hdr from "/assets/hdrs/venice_sunset_1k.hdr?url";
 import lut from "/assets/luts/Bourbon 64.CUBE?url";
 
-let app, stats, canvasContainer, renderer, composer, camera, controls;
+let app, canvasContainer, renderer, composer, camera, controls;
 
 init();
 
 function init() {
   app = createApp();
   createGUI(app);
-  stats = new Stats();
 
   canvasContainer = document.getElementById("canvas-container");
   let canvas = document.getElementById("canvas");
@@ -46,7 +44,6 @@ function init() {
   });
 
   // start loading" LUT
-  console.log(lut);
   new LUTCubeLoader().load(lut, function (result) {
     app.dispatch({
       type: AppActions.UpdateParam,
@@ -194,14 +191,12 @@ function init() {
 
   // render loop
   function animate(time) {
-    stats.begin();
     controls.update();
     if (scene) {
       updateLightPositions(time);
       // renderer.render(scene, camera);
       composer.render(scene, camera);
     }
-    stats.end();
     requestAnimationFrame(animate);
   }
   animate();
@@ -226,9 +221,6 @@ window.onkeydown = function (evt) {
     });
   } else if (evt.key == "z") {
     controls.reset();
-  } else if (evt.key == "f") {
-    document.body.appendChild(stats.dom);
-    stats.showPanel(0);
   }
 };
 
