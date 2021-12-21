@@ -10,14 +10,23 @@ import {
 
 function randomState() {
   let willStroke = random.chance(0.2);
+  let isMetal = random.chance(0.3);
+
+  let roughness = Math.random();
+  let metalness = 1.0 - roughness;
 
   return {
     sampler: undefined,
 
+    // base grid
     gridDensity: random.rangeFloor(6, 13),
 
+    // tess settings
+    maxDepth: random.rangeFloor(2, 5),
+    growthAmount: random.range(0.01, 0.02), // relative to largest side of canvas
+    growthFalloff: random.range(0.3, 0.7),
+    invert: random.boolean(),
     tessStack: buildRandomTessStack(),
-
     get tessLevel1() {
       return tessOptionToName(this.tessStack[0]);
     },
@@ -34,14 +43,17 @@ function randomState() {
       return tessOptionToName(this.tessStack[3]);
     },
     set tessLevel4(dropped) {},
-    maxDepth: random.rangeFloor(2, 5),
-    invert: random.boolean(),
 
-    enableFill: true,
-    enableStroke: willStroke,
-    lineWidth: 2.0,
-    lineColor: willStroke ? "#000000" : "#ffffff",
-    lineOpacity: willStroke ? 128 : 255,
+    // style
+    brightness: 1.0,
+    roughness,
+    metalness,
+
+    // enableFill: true,
+    // enableStroke: willStroke,
+    // lineWidth: 2.0,
+    // lineColor: willStroke ? "#000000" : "#ffffff",
+    // lineOpacity: willStroke ? 128 : 255,
   };
 }
 
