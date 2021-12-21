@@ -7,17 +7,14 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment";
 import { randomImage } from "./src/lib/images";
 
-let app, canvasContainer, renderer, camera;
+let app, stats, canvasContainer, renderer, camera, controls;
 
 init();
 
 function init() {
   app = createApp();
   createGUI(app);
-
-  // let stats = new Stats();
-  // stats.showPanel(0);
-  // document.body.appendChild(stats.dom);
+  stats = new Stats();
 
   canvasContainer = document.getElementById("canvas-container");
   let canvas = document.getElementById("canvas");
@@ -26,7 +23,7 @@ function init() {
     preserveDrawingBuffer: true,
     antialias: true,
   });
-  // renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
   // env map
@@ -34,20 +31,28 @@ function init() {
   pmremGenerator.compileCubemapShader();
   let envMap = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
+  // camera
   camera = new THREE.PerspectiveCamera(
-    45,
+    35,
     canvas.clientWidth / canvas.clientHeight,
     0.1,
     1000
   );
-  const controls = new OrbitControls(camera, renderer.domElement);
-  camera.position.set(0, 0, 2.9);
+  controls = new OrbitControls(camera, renderer.domElement);
   controls.minDistance = 0.5;
   controls.maxDistance = 10;
-  controls.update();
+  function setCameraPositionForImageSize(size) {
+    let cropFactor = 1.2;
+    let fov = camera.fov * (Math.PI / 180);
+    let z = (size[1] * cropFactor) / Math.tan(fov / 2);
+    camera.position.set(0, 0, z);
+    controls.update();
+    controls.saveState();
+  }
 
   // when values change - rebuild scene
   let scene = _update();
+  let imageSize = [-1, -1];
   let updateLightPositions;
   function _update() {
     let state = app.getState();
@@ -61,7 +66,6 @@ function init() {
     const mesh = createMesh(state, envMap);
     const scene = new THREE.Scene();
     scene.background = envMap;
-    // scene.background = new THREE.Color(0x444444);
     scene.add(mesh);
 
     // apply scale and offset needed to center canvas
@@ -78,6 +82,10 @@ function init() {
     mesh.scale.set(scale, -scale, scale);
     mesh.translateX(-xSize);
     mesh.translateY(ySize);
+
+    if (imageSize != [xSize, ySize]) {
+      setCameraPositionForImageSize([xSize, ySize]);
+    }
 
     // clip to canvas size of [-1, 1] in x, y axis
     renderer.clippingPlanes = [
@@ -127,13 +135,13 @@ function init() {
 
   // render loop
   function animate(time) {
-    // stats.begin();
+    stats.begin();
     controls.update();
     if (scene) {
       updateLightPositions(time);
       renderer.render(scene, camera);
     }
-    // stats.end();
+    stats.end();
     requestAnimationFrame(animate);
   }
   animate();
@@ -155,6 +163,11 @@ window.onkeydown = function (evt) {
       type: AppActions.RandomizeState,
       payload: {},
     });
+  } else if (evt.key == "z") {
+    controls.reset();
+  } else if (evt.key == "f") {
+    document.body.appendChild(stats.dom);
+    stats.showPanel(0);
   }
 };
 
