@@ -45,7 +45,6 @@ const defaultImages = [
 ];
 
 function randomImage() {
-  // return tex10;
   return defaultImages[Math.floor(Math.random() * defaultImages.length)];
 }
 

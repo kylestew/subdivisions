@@ -12,6 +12,7 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader.js";
 import { LUTCubeLoader } from "three/examples/jsm/loaders/LUTCubeLoader";
 import { LUTPass } from "three/examples/jsm/postprocessing/LUTPass.js";
+import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import hdr from "/assets/hdrs/venice_sunset_1k.hdr?url";
 import lut from "/assets/luts/Bourbon 64.CUBE?url";
 
@@ -29,7 +30,6 @@ function init() {
   renderer = new THREE.WebGLRenderer({
     canvas,
     preserveDrawingBuffer: true,
-    antialias: true,
   });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1;
@@ -178,6 +178,13 @@ function init() {
       lutPass.enabled = true;
       composer.addPass(lutPass);
     }
+    let fxaaPass = new ShaderPass(FXAAShader);
+    const pixelRatio = renderer.getPixelRatio();
+    fxaaPass.material.uniforms["resolution"].value.x =
+      1 / (canvasContainer.offsetWidth * pixelRatio);
+    fxaaPass.material.uniforms["resolution"].value.y =
+      1 / (canvasContainer.offsetHeight * pixelRatio);
+    composer.addPass(fxaaPass);
 
     return scene;
   }
