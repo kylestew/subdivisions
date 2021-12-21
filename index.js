@@ -15,8 +15,8 @@ function init() {
   createGUI(app);
 
   let stats = new Stats();
-  stats.showPanel(0);
-  document.body.appendChild(stats.dom);
+  // stats.showPanel(0);
+  // document.body.appendChild(stats.dom);
 
   let canvas = document.getElementById("canvas");
   renderer = new THREE.WebGLRenderer({
@@ -40,8 +40,8 @@ function init() {
     1000
   );
   const controls = new OrbitControls(camera, renderer.domElement);
-  camera.position.set(0, 0, 2.4);
-  controls.minDistance = 1;
+  camera.position.set(0, 0, 2.9);
+  controls.minDistance = 0.5;
   controls.maxDistance = 10;
   controls.update();
 
@@ -145,9 +145,10 @@ window.onresize = function () {
 };
 
 window.onkeydown = function (evt) {
+  console.log(evt);
   if (evt.key == "s") {
     saveFrame();
-  } else if (evt.key == "r") {
+  } else if (evt.key == "r" && evt.metaKey == false) {
     app.dispatch({
       type: AppActions.RandomizeState,
       payload: {},
