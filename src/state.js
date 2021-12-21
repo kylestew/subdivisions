@@ -9,14 +9,13 @@ import {
 } from "./lib/tesses";
 
 function randomState() {
-  let willStroke = random.chance(0.2);
-  let isMetal = random.chance(0.3);
-
   let roughness = Math.random();
   let metalness = 1.0 - roughness;
 
   return {
     sampler: undefined,
+
+    envMap: undefined,
 
     // base grid
     gridDensity: random.rangeFloor(6, 13),
@@ -77,10 +76,14 @@ function appReducer(state = randomState(), action) {
       return Object.assign({}, state, { tessStack });
 
     case AppActions.UpdateParam:
+      console.log("update", action.payload);
       return Object.assign({}, state, action.payload);
 
     case AppActions.RandomizeState:
-      return Object.assign(randomState(), { sampler: state.sampler });
+      return Object.assign(randomState(), {
+        sampler: state.sampler,
+        envMap: state.envMap,
+      });
 
     default:
       return state;

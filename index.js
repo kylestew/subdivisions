@@ -5,6 +5,7 @@ import { createMesh } from "./src/sketch";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { randomImage } from "./src/lib/images";
 
 let app, stats, canvasContainer, renderer, camera, controls;
@@ -26,10 +27,16 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
-  // env map
-  const pmremGenerator = new THREE.PMREMGenerator(renderer);
-  pmremGenerator.compileCubemapShader();
-  let envMap = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+  // start loading EnvMap
+  new RGBELoader()
+    .setPath("assets/")
+    .load("venice_sunset_1k.hdr", function (texture) {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      app.dispatch({
+        type: AppActions.UpdateParam,
+        payload: { envMap: texture },
+      });
+    });
 
   // camera
   camera = new THREE.PerspectiveCamera(
@@ -42,6 +49,7 @@ function init() {
   controls.minDistance = 0.5;
   controls.maxDistance = 10;
   function setCameraPositionForImageSize(size) {
+    // TODO: if width is too great, scale height size until its not?
     let cropFactor = 1.2;
     let fov = camera.fov * (Math.PI / 180);
     let z = (size[1] * cropFactor) / Math.tan(fov / 2);
@@ -63,9 +71,12 @@ function init() {
     let { width, height } = sampler;
 
     // create scene
-    const mesh = createMesh(state, envMap);
+    const mesh = createMesh(state);
     const scene = new THREE.Scene();
-    scene.background = envMap;
+    if (state.envMap != undefined) {
+      scene.background = state.envMap;
+      scene.environment = state.envMap;
+    }
     scene.add(mesh);
 
     // apply scale and offset needed to center canvas
@@ -108,6 +119,7 @@ function init() {
 
     updateLightPositions = (time) => {
       let angle = time / 2048.0;
+
       light0.position.set(
         2 * Math.cos(angle),
         2 * Math.sin(angle),
