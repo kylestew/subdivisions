@@ -16,6 +16,7 @@ function randomState() {
     sampler: undefined,
 
     envMap: undefined,
+    lut: undefined,
 
     // base grid
     gridDensity: random.rangeFloor(6, 13),

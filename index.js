@@ -4,11 +4,16 @@ import { createGUI } from "./src/gui";
 import { createMesh } from "./src/sketch";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { randomImage } from "./src/lib/images";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
+import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader.js";
+import { LUTCubeLoader } from "three/examples/jsm/loaders/LUTCubeLoader";
+import { LUTPass } from "three/examples/jsm/postprocessing/LUTPass.js";
 
-let app, stats, canvasContainer, renderer, camera, controls;
+let app, stats, canvasContainer, renderer, composer, camera, controls;
 
 init();
 
@@ -24,6 +29,8 @@ function init() {
     preserveDrawingBuffer: true,
     antialias: true,
   });
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
@@ -37,6 +44,23 @@ function init() {
         payload: { envMap: texture },
       });
     });
+
+  // start loading" LUT
+  const name = "Bourbon 64.CUBE";
+  new LUTCubeLoader().load("assets/luts/" + name, function (result) {
+    app.dispatch({
+      type: AppActions.UpdateParam,
+      payload: { lut: result },
+    });
+  });
+
+  // post effect render composer
+  const target = new THREE.WebGLRenderTarget({
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+    encoding: THREE.sRGBEncoding,
+  });
 
   // camera
   camera = new THREE.PerspectiveCamera(
@@ -94,8 +118,10 @@ function init() {
     mesh.translateX(-xSize);
     mesh.translateY(ySize);
 
-    if (imageSize != [xSize, ySize]) {
-      setCameraPositionForImageSize([xSize, ySize]);
+    // reset camera if image size has changed
+    if (imageSize[0] != xSize || imageSize[1] != ySize) {
+      imageSize = [xSize, ySize];
+      setCameraPositionForImageSize(imageSize);
     }
 
     // clip to canvas size of [-1, 1] in x, y axis
@@ -132,12 +158,26 @@ function init() {
         0.5 + 0.3 * Math.cos(angle * 0.222)
       );
 
-      light0.intensity = 2.4 * brightness;
-      light1.intensity = 0.8 * brightness;
+      light0.intensity = 0.8 * brightness;
+      light1.intensity = 0.3 * brightness;
 
       // helper1.update();
       // helper2.update();
     };
+
+    // setup post processing stack
+    composer = new EffectComposer(renderer, target);
+    composer.setPixelRatio(window.devicePixelRatio);
+    composer.setSize(canvas.clientWidth, canvas.clientHeight);
+    composer.addPass(new RenderPass(scene, camera));
+    composer.addPass(new ShaderPass(GammaCorrectionShader));
+    if (state.lut) {
+      let lutPass = new LUTPass();
+      lutPass.lut = state.lut.texture3D;
+      lutPass.intensity = 1;
+      lutPass.enabled = true;
+      composer.addPass(lutPass);
+    }
 
     return scene;
   }
@@ -151,7 +191,8 @@ function init() {
     controls.update();
     if (scene) {
       updateLightPositions(time);
-      renderer.render(scene, camera);
+      // renderer.render(scene, camera);
+      composer.render(scene, camera);
     }
     stats.end();
     requestAnimationFrame(animate);
@@ -163,6 +204,7 @@ window.onresize = function () {
   camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+  composer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
 };
 
 window.onkeydown = function (evt) {
