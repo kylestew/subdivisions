@@ -59,7 +59,7 @@ function createMesh(state) {
     color: 0xfffffff,
     roughness: state.roughness,
     metalness: state.metalness,
-    // wireframe: true,
+    envMapIntensity: brightness,
   });
   return new THREE.Mesh(geometry, material);
 }

@@ -13,7 +13,7 @@ import { LUTCubeLoader } from "three/examples/jsm/loaders/LUTCubeLoader";
 import { LUTPass } from "three/examples/jsm/postprocessing/LUTPass.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import hdr from "/assets/hdrs/venice_sunset_1k.hdr?url";
-import lut from "/assets/luts/Everyday_Pro_Color.cube?url";
+import lut from "/assets/luts/Basic_Contrasty.cube?url";
 
 let app, canvasContainer, renderer, composer, camera, controls;
 
@@ -94,8 +94,12 @@ function init() {
     // create scene
     const mesh = createMesh(state);
     const scene = new THREE.Scene();
+    // scene.background = state.backgroundColor;
+    scene.background = new THREE.Color(state.backgroundColor);
     if (state.envMap != undefined) {
-      scene.background = state.envMap;
+      if (state.showEnvironment) {
+        scene.background = state.envMap;
+      }
       scene.environment = state.envMap;
     }
     scene.add(mesh);
@@ -167,14 +171,6 @@ function init() {
     composer.setPixelRatio(window.devicePixelRatio);
     composer.setSize(canvas.clientWidth, canvas.clientHeight);
     composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new ShaderPass(GammaCorrectionShader));
-    if (state.lut) {
-      let lutPass = new LUTPass();
-      lutPass.lut = state.lut.texture3D;
-      lutPass.intensity = 1;
-      lutPass.enabled = true;
-      composer.addPass(lutPass);
-    }
     let fxaaPass = new ShaderPass(FXAAShader);
     const pixelRatio = renderer.getPixelRatio();
     fxaaPass.material.uniforms["resolution"].value.x =
@@ -182,6 +178,15 @@ function init() {
     fxaaPass.material.uniforms["resolution"].value.y =
       1 / (canvasContainer.offsetHeight * pixelRatio);
     composer.addPass(fxaaPass);
+    composer.addPass(new ShaderPass(GammaCorrectionShader));
+    if (state.lut) {
+      console.log("adding lut pass");
+      let lutPass = new LUTPass();
+      lutPass.lut = state.lut.texture3D;
+      lutPass.intensity = 1.2;
+      lutPass.enabled = true;
+      composer.addPass(lutPass);
+    }
 
     return scene;
   }
@@ -194,7 +199,9 @@ function init() {
     controls.update();
     if (scene) {
       updateLightPositions(time);
-      // renderer.render(scene, camera);
+
+      // TODO: wiggle
+
       composer.render(scene, camera);
     }
     requestAnimationFrame(animate);

@@ -49,11 +49,8 @@ function randomState() {
     roughness,
     metalness,
 
-    // enableFill: true,
-    // enableStroke: willStroke,
-    // lineWidth: 2.0,
-    // lineColor: willStroke ? "#000000" : "#ffffff",
-    // lineOpacity: willStroke ? 128 : 255,
+    showEnvironment: true,
+    backgroundColor: "#989898",
   };
 }
 
@@ -83,6 +80,7 @@ function appReducer(state = randomState(), action) {
       return Object.assign(randomState(), {
         sampler: state.sampler,
         envMap: state.envMap,
+        lut: state.lut,
       });
 
     default:

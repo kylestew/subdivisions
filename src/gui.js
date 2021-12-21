@@ -44,7 +44,7 @@ function createGUI(app) {
   imageSelector = createImageSelector(app);
 
   var tessFolder = gui.addFolder("Tessellation");
-  // tessFolder.open();
+  tessFolder.open();
 
   tessFolder
     .add(state, "gridDensity")
@@ -95,44 +95,29 @@ function createGUI(app) {
   styleFolder.open();
 
   styleFolder
+    .addColor(state, "backgroundColor")
+    .name("Background Color")
+    .onChange((val) => dispatchUpdate({ backgroundColor: val }));
+
+  styleFolder
+    .add(state, "showEnvironment")
+    .name("Show World")
+    .onChange((val) => dispatchUpdate({ showEnvironment: val }));
+
+  styleFolder
     .add(state, "brightness", 0, 2, 0.01)
     .name("Brightness")
     .onChange((val) => dispatchUpdate({ brightness: val }));
 
   styleFolder
     .add(state, "roughness", 0, 1, 0.01)
-    .name("Roughness")
+    .name("Matte")
     .onChange((val) => dispatchUpdate({ roughness: val }));
 
   styleFolder
     .add(state, "metalness", 0, 1, 0.01)
-    .name("Metalness")
+    .name("Metalic")
     .onChange((val) => dispatchUpdate({ metalness: val }));
-
-  // styleFolder
-  //   .add(state, "enableStroke")
-  //   .name("Draw Lines")
-  //   .onChange((val) => dispatchUpdate({ enableStroke: val }));
-
-  // styleFolder
-  //   .add(state, "lineWidth")
-  //   .name("Line Width")
-  //   .min(0.1)
-  //   .max(24.0)
-  //   .step(0.1)
-  //   .onChange((val) => dispatchUpdate({ lineWidth: val }));
-
-  // styleFolder
-  //   .addColor(state, "lineColor")
-  //   .onChange((val) => dispatchUpdate({ lineColor: val }));
-
-  // styleFolder
-  //   .add(state, "lineOpacity")
-  //   .name("Line Opacity")
-  //   .min(0)
-  //   .max(255)
-  //   .step(1)
-  //   .onChange((val) => dispatchUpdate({ lineOpacity: val }));
 }
 
 export { createGUI };
