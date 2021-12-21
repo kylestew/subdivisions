@@ -26,6 +26,7 @@ function createImageSelector(app) {
 function createGUI(app) {
   const state = app.getState();
   const gui = new dat.GUI();
+  gui.close();
 
   const dispatchUpdate = (payload) => {
     app.dispatch({
@@ -40,7 +41,7 @@ function createGUI(app) {
     });
   };
 
-  // imageSelector = createImageSelector(app);
+  imageSelector = createImageSelector(app);
 
   var tessFolder = gui.addFolder("Tessellation");
   // tessFolder.open();

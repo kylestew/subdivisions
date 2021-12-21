@@ -24,7 +24,7 @@ function init() {
     preserveDrawingBuffer: true,
     antialias: true,
   });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  // renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
