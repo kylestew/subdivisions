@@ -7,9 +7,10 @@ import { centroid, polygon, tessellate } from "@thi.ng/geom";
 import { triFan } from "@thi.ng/geom-tessellate";
 import * as THREE from "three";
 
-function createMesh(state, envMap) {
+function createMesh(state) {
   let {
     sampler,
+    envMap,
     gridDensity,
     tessStack,
     maxDepth,
@@ -58,8 +59,6 @@ function createMesh(state, envMap) {
     color: 0xfffffff,
     roughness: state.roughness,
     metalness: state.metalness,
-    envMap,
-    envMapIntensity: 0.5 * brightness,
     // wireframe: true,
   });
   return new THREE.Mesh(geometry, material);
