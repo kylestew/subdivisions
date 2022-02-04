@@ -81,8 +81,6 @@ function appReducer(state = randomState(), action) {
         sampler: state.sampler,
         envMap: state.envMap,
         lut: state.lut,
-        backgroundColor: state.backgroundColor,
-        showEnvironment: state.showEnvironment,
       });
 
     default:
